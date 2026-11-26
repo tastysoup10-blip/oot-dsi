@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#17251d"><title>OoT DSi — ROM Asset Extractor</title>
-<link rel="stylesheet" href="style.css?v=0.2.1">
+<link rel="stylesheet" href="style.css?v=0.2.2">
 </head>
 <body><main class="panel">
 <p class="eyebrow">OOT DSI PROJECT</p><h1>ROM Asset Extractor</h1>
@@ -11,7 +11,7 @@
 <p class="intro">Read the ROM's DMA filesystem, inspect its files, and extract individual files locally. This is the first real extraction stage; model decoding comes next.</p>
 <section class="notice"><strong>Private by design</strong><p>The ROM stays in this browser tab. No upload, server processing, or asset storage. Extracted files are downloaded directly to your device.</p></section>
 <label class="file-label" for="rom">Choose your NTSC 1.2 .z64 ROM</label><input id="rom" type="file" accept=".z64,.n64,.v64,application/octet-stream">
-<div id="status" class="status" role="status" aria-live="polite">Waiting for a ROM file.</div>
+<div id="status" class="status" role="status" aria-live="polite">Loading extractor script…</div>
 <section id="details" class="details" hidden><h2>ROM information</h2><dl>
 <dt>File</dt><dd id="filename"></dd><dt>Size</dt><dd id="filesize"></dd><dt>Format</dt><dd id="format"></dd><dt>MD5</dt><dd id="md5"></dd><dt>Version</dt><dd id="version"></dd><dt>DMA table</dt><dd id="dma-location"></dd><dt>Files found</dt><dd id="file-count"></dd>
 </dl></section>
@@ -22,4 +22,4 @@
 <section class="notice muted"><strong>What this version extracts</strong><p>Individual DMA files, including raw files and Yaz0-compressed files (automatically decompressed). The retail ROM does not contain friendly filenames, so files are shown by index and address. This version does not yet identify Link's object or convert N64 display lists into a DSi mesh.</p></section>
 <p class="foot">ROM Asset Extractor · Version 0.2.1</p>
 <p class="foot">Nothing is saved by this page. Keep extracted files on your device; do not commit ROM data or extracted assets to the public repository.</p>
-</main><script src="app.js?v=0.2.1"></script></body></html>
+</main><script src="app.js?v=0.2.2"></script></body></html>
