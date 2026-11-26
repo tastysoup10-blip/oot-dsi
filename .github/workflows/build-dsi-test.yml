@@ -13,6 +13,7 @@ on:
       - "dsi-test/**"
       - "dsi-texture-camera/**"
       - "dsi-terrain/**"
+      - "dsi-player-movement/**"
       - ".github/workflows/build-dsi-test.yml"
   workflow_dispatch:
 
