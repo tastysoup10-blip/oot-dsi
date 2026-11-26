@@ -45,3 +45,46 @@ Add findings here with:
 - upstream commit hash so results can be reproduced.
 
 No ROM or extracted asset files should be added to this repository.
+
+## First source-level findings
+
+Source checked: ZeldaRET/oot `main` branch, 2026-11-25. These are initial observations from reading the files listed below, not a complete dependency audit.
+
+### Source layout
+
+The `src/` directory is divided into several platform/runtime areas:
+- `src/code/`: shared game and engine code, including main loop, game state, graphics, camera, actors, scenes, and memory management.
+- `src/overlays/`: actor, effect, game-state, and miscellaneous overlays.
+- `src/audio/`: audio implementation areas.
+- `src/libultra/`, `src/libu64/`, and `src/libc64/`: N64-era support/library code.
+
+The public `include/` directory contains engine headers such as `gfx.h`, `game.h`, `play_state.h`, `controller.h`, and `ultra64.h`.
+
+### Files inspected
+
+| File | What the source establishes | DSi relevance |
+|---|---|---|
+| `src/code/main.c` | Includes N64 system/context headers and sets up core application-side systems. | Startup and platform services need mapping to DSi equivalents. Full initialization flow still needs tracing. |
+| `src/code/game.c` | Includes graphics, scheduler, controller, memory, audio, and game-state interfaces. | A useful place to trace frame coordination and platform boundaries. |
+| `src/code/graph.c` | Includes graphics, VI mode, microcode, game-state, and audio interfaces. | Strong candidate for the N64 graphics task/frame submission boundary. |
+| `src/code/z_play.c` | Pulls together gameplay systems including actors, camera, collision, scenes, objects, audio, and graphics. | Gameplay logic may be reusable conceptually, but dependencies need to be separated from rendering and platform services. |
+| `src/code/z_rcp.c` | Defines N64 graphics setup display lists using RDP/RSP-style graphics macros. | This is not a direct DSi graphics implementation; rendering commands will need a new backend or translation layer. |
+| `src/code/z_view.c` | Implements view/viewport and projection-related routines. | Math concepts can inform a new renderer, but the current graphics structures and conventions are N64-oriented. |
+| `include/gfx.h` | Defines a 320×240 screen size, a 4 KiB texture memory constant, and N64 graphics task/pool structures. | These are concrete N64 assumptions; DSi screen dimensions, memory, and graphics submission must be designed separately. |
+| `include/ultra64.h` | Aggregates Nintendo 64 SDK-style interfaces including RCP, VI, PI, controller, thread, and audio-related headers. | Broad platform coupling: compiling the existing source for DSi unchanged is not a realistic first step. |
+
+### Current architectural conclusion
+
+The most promising strategy to investigate is **not** "compile the decompilation for ARM." Instead, identify portable gameplay/data logic, then replace the N64-specific services—especially graphics, audio, input, timing, DMA/resource loading, and scheduling—with DSi implementations.
+
+This is an architectural hypothesis based on the files above. It does not yet prove which gameplay modules can be reused without changes.
+
+### Next source-reading targets
+
+1. Trace the actual frame loop through `main.c`, `game.c`, and `graph.c`.
+2. Inspect the N64 graphics task path and identify where RSP/RDP display lists are built and submitted.
+3. Trace controller input from the N64 controller API into gameplay state.
+4. Map audio task submission and resource loading.
+5. Inspect memory allocation and scene/object loading to estimate the runtime memory footprint.
+
+No ROM or extracted game assets were downloaded or added.
