@@ -129,7 +129,7 @@ int main(void)
                         TEXGEN_TEXCOORD | GL_TEXTURE_WRAP_S | GL_TEXTURE_WRAP_T,
                         texture_pixels, NULL) == 0)
     {
-        printf("Texture upload failed.\\n");
+        printf("Texture upload failed.\n");
         while (1) swiWaitForVBlank();
     }
 
@@ -173,12 +173,12 @@ int main(void)
 
         object_angle++;
         consoleClear();
-        printf("OOT DSi - TERRAIN TEST\\n");
-        printf("----------------------\\n");
-        printf("D-pad: move camera X/Z\\n");
-        printf("X/Y: camera height\\n");
-        printf("A: reset camera\\n");
-        printf("START: exit\\n\\n");
+        printf("OOT DSi - TERRAIN TEST\n");
+        printf("----------------------\n");
+        printf("D-pad: move camera X/Z\n");
+        printf("X/Y: camera height\n");
+        printf("A: reset camera\n");
+        printf("START: exit\n\n");
         printf("Camera: %.1f %.1f %.1f", camera_x, camera_y, camera_z);
 
         glMatrixMode(GL_MODELVIEW);
