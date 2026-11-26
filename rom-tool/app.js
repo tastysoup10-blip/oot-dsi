@@ -2,7 +2,6 @@
 const input=document.querySelector("#rom"), statusBox=document.querySelector("#status"), details=document.querySelector("#details"), browser=document.querySelector("#browser"), rows=document.querySelector("#files"), filter=document.querySelector("#filter");
 const known={"2258052847bdd056c8406a9ef6427f13":"NTSC 1.2 (Japanese)","57a9719ad547c516342e1a15d5c28c3d":"NTSC 1.2 (USA)"};
 let rom=null, dmaFiles=[];
-status("Extractor script loaded. Choose your ROM file.");
 function dev(id,label,detail,kind){const a=document.querySelector("#dev-"+id);const b=document.querySelector("#dev-"+id+"-detail");if(a){a.textContent=label;a.className="dev-state "+kind}if(b)b.textContent=detail;}
 function logDev(message){const el=document.querySelector("#dev-log");if(el)el.textContent="Diagnostic: "+message;}
 dev("js","Running","JavaScript loaded and event handlers are being initialized.","implemented");
@@ -10,6 +9,7 @@ logDev("script loaded; waiting for ROM selection.");
 window.addEventListener("error",e=>status("JavaScript error: "+(e.message||"unknown error"),"bad"));
 window.addEventListener("unhandledrejection",e=>status("Processing error: "+(e.reason?.message||String(e.reason)),"bad"));
 function status(s,k=""){statusBox.textContent=s;statusBox.className="status"+(k?" "+k:"");}
+status("Extractor script loaded. Choose your ROM file.");
 function md5(bytes){const shifts=[7,12,17,22,5,9,14,20,4,11,16,23,6,10,15,21],K=Array.from({length:64},(_,i)=>Math.floor(Math.abs(Math.sin(i+1))*4294967296)>>>0),bitLen=bytes.length*8,paddedLen=Math.ceil((bytes.length+9)/64)*64,data=new Uint8Array(paddedLen);data.set(bytes);data[bytes.length]=128;const v=new DataView(data.buffer);v.setUint32(paddedLen-8,bitLen>>>0,true);v.setUint32(paddedLen-4,Math.floor(bitLen/4294967296),true);let a0=0x67452301,b0=0xefcdab89,c0=0x98badcfe,d0=0x10325476,M=new Uint32Array(16);for(let o=0;o<paddedLen;o+=64){for(let j=0;j<16;j++)M[j]=v.getUint32(o+j*4,true);let A=a0,B=b0,C=c0,D=d0;for(let i=0;i<64;i++){let F,g,s;if(i<16){F=(B&C)|(~B&D);g=i;s=shifts[i%4]}else if(i<32){F=(D&B)|(~D&C);g=(5*i+1)%16;s=shifts[4+i%4]}else if(i<48){F=B^C^D;g=(3*i+5)%16;s=shifts[8+i%4]}else{F=C^(B|~D);g=(7*i)%16;s=shifts[12+i%4]}const z=(A+F+K[i]+M[g])>>>0,n=(B+((z<<s)|(z>>>(32-s))))>>>0;A=D;D=C;C=B;B=n}a0=(a0+A)>>>0;b0=(b0+B)>>>0;c0=(c0+C)>>>0;d0=(d0+D)>>>0}return[a0,b0,c0,d0].map(n=>[0,8,16,24].map(s=>((n>>>s)&255).toString(16).padStart(2,"0")).join("")).join("")}
 function normalizeRom(src){const m=[...src.slice(0,4)].map(x=>x.toString(16).padStart(2,"0")).join("");if(m==="80371240")return src;if(m==="37804012"){const out=new Uint8Array(src.length);for(let i=0;i+1<src.length;i+=2){out[i]=src[i+1];out[i+1]=src[i]}return out}if(m==="40123780"){const out=new Uint8Array(src.length);for(let i=0;i+3<src.length;i+=4){out[i]=src[i+3];out[i+1]=src[i+2];out[i+2]=src[i+1];out[i+3]=src[i]}return out}throw Error("Unrecognized N64 ROM byte order.");}
 function u32(v,o){return v.getUint32(o,false)}
