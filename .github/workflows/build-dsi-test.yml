@@ -38,4 +38,4 @@ jobs:
             dsi-test/*.nds
             dsi-texture-camera/*.nds
           if-no-files-found: error
-          retention-days: 14
+          retention-days: 30
