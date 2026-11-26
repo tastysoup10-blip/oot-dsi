@@ -120,10 +120,16 @@ function findAdultLinkObject(){
 }
 async function extractAdultLink(){
  const button=document.querySelector("#extract-link");
- if(!rom||!dmaFiles.length)return;
+ devLog("info","Link asset extraction button clicked.");
+ if(!rom||!dmaFiles.length){
+  status("Load and verify your ROM first; no parsed DMA data is available.","bad");
+  devLog("error","Link extraction stopped: ROM or DMA data is missing.");
+  return;
+ }
  button.disabled=true;
  try{
   status("Verifying the Link object table and preparing the asset bundle…");
+  devLog("info","Starting Link object-table verification.");
   const found=findAdultLinkObject();
   const getData=f=>{let b=rom.slice(f.romStart,f.romEnd);return f.compressed?yaz0(b,f.size):b};
   const adultData=getData(found.adult),childData=getData(found.child);
@@ -150,9 +156,14 @@ async function extractAdultLink(){
    ].join(String.fromCharCode(10))) }
   ]);
   const url=URL.createObjectURL(blob),a=document.createElement("a");
-  a.href=url;a.download="oot-link-object-assets-ntsc-1.2.zip";a.click();
+  a.href=url;a.download="oot-link-object-assets-ntsc-1.2.zip";
+  a.style.display="none";document.body.appendChild(a);a.click();a.remove();
   setTimeout(()=>URL.revokeObjectURL(url),30000);
-  status("Adult and Child Link object assets extracted and verified. The ZIP contains original object binaries plus offsets and a report.","good");
- }catch(e){status("Link asset extraction failed: "+e.message,"bad");devLog("error","Link asset extraction: "+e.message)}
+  status("Adult and Child Link object assets extracted. Your browser should download the ZIP now.","good");
+  devLog("success","Created Link asset ZIP ("+blob.size+" bytes); download was requested.");
+ }catch(e){
+  status("Link asset extraction failed: "+(e&&e.message?e.message:String(e)),"bad");
+  devLog("error","Link asset extraction: "+(e&&e.stack?e.stack:String(e)));
+ }
  finally{button.disabled=false}
 }
