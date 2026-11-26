@@ -31,8 +31,8 @@ function decodePart(bytes,part){
    visited.add(pc);commands++;const w0=u32(view,pc),w1=u32(view,pc+4),op=w0>>>24;pc+=8;
    if(op===0xDF)return;
    if(op===0x01){const n=(w0>>>12)&255,dest=(w0>>>1)&127;vertexLoad(w1,n,dest);continue;}
-   if(op===0x05){tri((w0>>>17)&127,(w0>>>9)&127,(w0>>>1)&127);continue;}
-   if(op===0x06){tri((w0>>>17)&127,(w0>>>9)&127,(w0>>>1)&127);tri((w1>>>17)&127,(w1>>>9)&127,(w1>>>1)&127);continue;}
+   if(op===0x05){tri(((w0>>>17)&127)>>>1,((w0>>>9)&127)>>>1,((w0>>>1)&127)>>>1);continue;}
+   if(op===0x06){tri((w0>>>17)&127,(w0>>>9)&127,(w0>>>1)&127);tri(((w1>>>17)&127)>>>1,((w1>>>9)&127)>>>1,((w1>>>1)&127)>>>1);continue;}
    if(op===0xDE){const target=w1&0xffffff;if((w1>>>24)===6&&target<bytes.length)walk(target,depth+1);else skipped++;continue;}
    if(op===0x00&&w0===0&&w1===0)continue;
    skipped++;
