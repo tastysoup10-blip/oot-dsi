@@ -117,6 +117,7 @@ jobs:
       - name: Test ZAPD extraction with synthetic fixture
         run: |
           set -euxo pipefail
+          cp zapd.wasm ZAPD.wasm
           mkdir -p zapd-fixture/baserom zapd-fixture/output
           printf '\\x00\\x11\\x22\\x33\\x44\\x55\\x66\\x77' > zapd-fixture/baserom/test_asset.bin
           cat > zapd-fixture/test_asset.xml <<'XML'
@@ -126,11 +127,7 @@ jobs:
             </File>
           </Root>
           XML
-          node zapd.js e \\
-            -i zapd-fixture/test_asset.xml \\
-            -o zapd-fixture/output \\
-            -b zapd-fixture/baserom \\
-            -v 1
+          node zapd.js e -i zapd-fixture/test_asset.xml -o zapd-fixture/output -b zapd-fixture/baserom -v 1
           find zapd-fixture/output -maxdepth 4 -type f -print
           test -n "$(find zapd-fixture/output -type f -print -quit)"
 
