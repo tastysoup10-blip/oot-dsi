@@ -60,7 +60,7 @@ jobs:
               include = "#include <cstring>"
               if source.count(include) != 1:
                   raise SystemExit("Could not safely locate cstring include")
-              source = source.replace(include, include + "\\n#include <cstdlib>", 1)
+              source = source.replace(include, include + chr(10) + "#include <cstdlib>", 1)
           helper.write_text(source)
           PY
 
