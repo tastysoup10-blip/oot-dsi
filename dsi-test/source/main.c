@@ -94,11 +94,11 @@ int main(void)
         angle_y += 1;
 
         consoleClear();
-        iprintf("OOT DSi - 3D TEST\n");
-        iprintf("----------------\n");
-        iprintf("D-pad: rotate cube\n");
-        iprintf("START: exit\n\n");
-        iprintf("Native DS 3D hardware");
+        printf("OOT DSi - 3D TEST\n");
+        printf("----------------\n");
+        printf("D-pad: rotate cube\n");
+        printf("START: exit\n\n");
+        printf("Native DS 3D hardware");
 
         glLoadIdentity();
         gluLookAt(0.0f, 0.0f, 4.0f,
