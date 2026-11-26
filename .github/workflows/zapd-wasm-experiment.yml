@@ -56,7 +56,9 @@ jobs:
           test -f upstream-zapd/tools/ZAPD/ZAPD.out
           file upstream-zapd/tools/ZAPD/ZAPD.out
           cp upstream-zapd/tools/ZAPD/ZAPD.out zapd.js
-          ls -lh zapd.js
+          test -f upstream-zapd/tools/ZAPD/ZAPD.out.wasm
+          cp upstream-zapd/tools/ZAPD/ZAPD.out.wasm zapd.wasm
+          ls -lh zapd.js zapd.wasm
 
       - name: Upload experimental build
         uses: actions/upload-artifact@v4
@@ -64,5 +66,6 @@ jobs:
           name: zapd-wasm-experiment
           path: |
             zapd.js
+            zapd.wasm
           if-no-files-found: error
           retention-days: 7
