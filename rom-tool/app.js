@@ -98,8 +98,8 @@ function findAdultLinkObject(){
  // version-specific ROM file map. Resolve them directly in the parsed DMA
  // filesystem; do not guess where the runtime object table sits in code.
  const specs=[
-  {key:"adult",id:0x0014,name:"object_link_boy",start:0x00F84000,end:0x00FBB800},
-  {key:"child",id:0x0015,name:"object_link_child",start:0x00FBC000,end:0x00FE8F80}
+  {key:"adult",id:0x0014,name:"object_link_boy",start:0x00F86000,end:0x00FBD800},
+  {key:"child",id:0x0015,name:"object_link_child",start:0x00FBE000,end:0x00FEAF80}
  ];
  const found={};
  for(const spec of specs){
@@ -136,8 +136,8 @@ async function extractAdultLink(){
    romMD5:document.querySelector("#md5").textContent,
    identification:"Adult and Child Link entries matched by their exact NTSC 1.2 VROM ranges in the DMA filesystem.",
    identificationMethod:"Matched the two exact NTSC 1.2 Link VROM ranges against the parsed DMA filesystem; validated sizes and ROM bounds.",
-   adultLink:{objectId:"0x0014",name:"object_link_boy",dmaId:found.adult.file.id,vromStart:"0x00F84000",vromEnd:"0x00FBB800",size:adultData.length,skeletonOffset:"0x377F4",limbTableOffset:"0x377A0",limbCount:21},
-   childLink:{objectId:"0x0015",name:"object_link_child",dmaId:found.child.file.id,vromStart:"0x00FBC000",vromEnd:"0x00FE8F80",size:childData.length,skeletonOffset:"0x2CF6C",limbTableOffset:"0x2CF18",limbCount:21},
+   adultLink:{objectId:"0x0014",name:"object_link_boy",dmaId:found.adult.file.id,vromStart:"0x00F86000",vromEnd:"0x00FBD800",size:adultData.length,skeletonOffset:"0x377F4",limbTableOffset:"0x377A0",limbCount:21},
+   childLink:{objectId:"0x0015",name:"object_link_child",dmaId:found.child.file.id,vromStart:"0x00FBE000",vromEnd:"0x00FEAF80",size:childData.length,skeletonOffset:"0x2CF6C",limbTableOffset:"0x2CF18",limbCount:21},
    note:"These are the original object binary files, not decoded meshes. They contain model display lists, vertex data, textures and skeleton-related data. A display-list/texture decoder is still required to produce OBJ/glTF or a DSi-ready model."
   };
   const blob=zipStore([
