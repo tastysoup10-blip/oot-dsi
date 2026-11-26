@@ -15,6 +15,16 @@
 <section id="details" class="details" hidden><h2>ROM information</h2><dl>
 <dt>File</dt><dd id="filename"></dd><dt>Size</dt><dd id="filesize"></dd><dt>Format</dt><dd id="format"></dd><dt>MD5</dt><dd id="md5"></dd><dt>Version</dt><dd id="version"></dd><dt>DMA table</dt><dd id="dma-location"></dd><dt>Files found</dt><dd id="file-count"></dd>
 </dl></section>
+<section id="link-reference" class="details">
+<h2>ZeldaRET Link-object reference</h2>
+<p class="intro">Reference data transcribed from ZeldaRET's object definitions. These are <strong>object-table IDs</strong>, not DMA file numbers. The tool does not yet resolve the object table to a DMA entry automatically.</p>
+<div class="table-wrap"><table><thead><tr><th>Character</th><th>Object ID</th><th>Object file</th><th>Skeleton offset</th><th>Limb table</th><th>Limbs</th></tr></thead><tbody>
+<tr><td>Adult Link</td><td>0x0014</td><td>object_link_boy</td><td>0x377F4</td><td>0x377A0</td><td>21</td></tr>
+<tr><td>Child Link</td><td>0x0015</td><td>object_link_child</td><td>0x2CF6C</td><td>0x2CF18</td><td>21</td></tr>
+</tbody></table></div>
+<p class="foot">Sources: <a href="https://github.com/zeldaret/oot/blob/main/include/tables/object_table.h" target="_blank" rel="noreferrer">object_table.h</a>, <a href="https://github.com/zeldaret/oot/blob/main/assets/xml/objects/object_link_boy.xml" target="_blank" rel="noreferrer">adult Link XML</a>, <a href="https://github.com/zeldaret/oot/blob/main/assets/xml/objects/object_link_child.xml" target="_blank" rel="noreferrer">child Link XML</a>.</p>
+<p class="intro">The XML describes a flexible 21-limb skeleton and the offsets of its model data. Once the correct DMA entry is resolved, these offsets can guide extraction of the skeleton and display lists. They are not standalone files or proof that a particular DMA row is Link.</p>
+</section>
 <section id="browser" class="details" hidden><h2>ROM files</h2><p class="intro">Search by file number, VROM address, or type. Select a row to extract its contents.</p>
 <label for="filter">Filter files</label><input id="filter" type="search" placeholder="e.g. 0x00A87000 or file 27">
 <div class="table-wrap"><table><thead><tr><th>#</th><th>VROM start</th><th>Size</th><th>Storage</th><th>Action</th></tr></thead><tbody id="files"></tbody></table></div>
