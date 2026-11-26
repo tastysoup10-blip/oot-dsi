@@ -46,6 +46,12 @@ jobs:
 
           crash = Path("ZAPD/CrashHandler.cpp")
           source = crash.read_text()
+          old_posix = "#if __has_include(<unistd.h>)"
+          new_posix = "#if __has_include(<unistd.h>) && !defined(__EMSCRIPTEN__)"
+          if new_posix not in source:
+              if source.count(old_posix) != 1:
+                  raise SystemExit("Could not safely locate POSIX crash-handler condition")
+              source = source.replace(old_posix, new_posix, 1)
           old_include = '#include "CrashHandler.h"'
           new_include = old_include + '\n#include "WarningHandler.h"'
           if new_include not in source:
