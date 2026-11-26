@@ -1,0 +1,90 @@
+# OoT DSi Link geometry export — experimental
+
+# Geometry only; no UVs, materials, skeleton, or animation.
+
+g gLinkChildTorsoNear
+v 919 -92 -175
+v 829 96 5
+v 961 -292 -230
+f 1 2 3
+
+g gLinkChildHeadNear
+v 984 -256 -105
+v 919 -91 186
+v 829 96 5
+v 919 -92 -175
+v 985 -255 117
+v 119 -190 352
+v 57 -446 618
+v 222 -469 483
+v 433 -5 239
+f 4 5 6
+f 4 7 5
+f 4 7 8
+f 9 10 11
+f 9 12 10
+
+g gLinkChildRightShoulderNear
+v 549 145 -547
+v 764 70 -521
+v 774 -358 -540
+v 867 -120 -515
+v 496 -145 -606
+f 13 14 15
+f 14 13 16
+f 17 16 13
+f 15 16 17
+f 15 17 13
+
+g gLinkChildLeftShoulderNear
+v 764 70 521
+v 774 -358 540
+v 867 -120 515
+v 549 145 547
+v 496 -145 606
+f 18 19 20
+f 18 21 19
+f 21 18 22
+f 22 18 20
+
+g gLinkChildRightFistAndDekuShieldNear
+v -644 781 -59
+v -970 337 -150
+v -1009 -169 -136
+v -857 352 -263
+v -818 -586 -134
+v 339 450 -258
+f 23 24 25
+f 26 27 28
+
+g gLinkChildBackHylianShieldSwordInSheathNear
+v 1870 602 -227
+v -455 -650 -291
+v 1720 -601 14
+v -542 585 16
+v 970 187 -12
+f 29 30 31
+f 29 31 32
+f 29 32 33
+f 33 32 31
+f 30 33 31
+
+g gLinkChildBackDekuShieldKokiriSwordInSheathNear
+v 1556 206 -136
+v 30 927 -92
+v -269 6 -141
+v 970 187 -12
+f 34 35 36
+f 35 37 36
+
+g gLinkChildRightHandHoldingFairyOcarinaNear
+v -469 507 345
+v -163 352 251
+v -332 429 382
+f 38 39 40
+
+g gLinkChildRightHandHoldingSlingshotNear
+v 192 129 183
+v 200 131 -116
+v 118 286 206
+f 41 42 43
