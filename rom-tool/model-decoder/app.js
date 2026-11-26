@@ -5,7 +5,7 @@ const say=(m,bad=false)=>{$("#status").textContent=m;$("#status").className="sta
 function u16(v,o){return v.getUint16(o,false)} function s16(v,o){return v.getInt16(o,false)} function u32(v,o){return v.getUint32(o,false)}
 function readZip(buf){
  const v=new DataView(buf),out={};let p=0;
- while(p+30<=buf.byteLength&&u32(v,p)===0x04034b50){
+ while(p+30<=buf.byteLength&&v.getUint32(p,true)===0x04034b50){
   const method=v.getUint16(p+8,true),csize=v.getUint32(p+18,true),nlen=v.getUint16(p+26,true),elen=v.getUint16(p+28,true);
   const name=new TextDecoder().decode(new Uint8Array(buf,p+30,nlen));const start=p+30+nlen+elen;
   if(method!==0)throw Error("ZIP uses compression. Please use the ZIP created by the ROM extractor (stored entries).");
