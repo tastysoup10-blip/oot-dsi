@@ -80,7 +80,7 @@ jobs:
         run: |
           emmake make -j2 CXX=em++ \
             'CXXFLAGS=-std=c++17 -O2 -sUSE_LIBPNG=1 -I ZAPD -I lib/libgfxd -I lib/tinyxml2 -I ZAPDUtils' \
-            'LDFLAGS=-lm -sUSE_LIBPNG=1 -sALLOW_MEMORY_GROWTH=1 -sFORCE_FILESYSTEM=1' \
+            'LDFLAGS=-lm -sUSE_LIBPNG=1 -sALLOW_MEMORY_GROWTH=1 -sFORCE_FILESYSTEM=1 -sASSERTIONS=2 -sSTACK_OVERFLOW_CHECK=2 -sSAFE_HEAP=1' \
             ZAPD.out
 
       - name: Verify WebAssembly output
@@ -128,7 +128,15 @@ jobs:
             </File>
           </Root>
           XML
-          node zapd.js e -i zapd-fixture/test_asset.xml -o zapd-fixture/output -b zapd-fixture/baserom -v 1
+          set +e
+          node zapd.js e -i zapd-fixture/test_asset.xml -o zapd-fixture/output -b zapd-fixture/baserom -v 3 > zapd-extraction-test.txt 2>&1
+          status=$?
+          set -e
+          cat zapd-extraction-test.txt
+          if [ "$status" -ne 0 ]; then
+            echo "ZAPD extraction failed with status $status" >&2
+            exit "$status"
+          fi
           find zapd-fixture/output -maxdepth 4 -type f -print
           test -n "$(find zapd-fixture/output -type f -print -quit)"
 
