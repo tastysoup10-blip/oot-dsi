@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#17251d"><title>OoT DSi — ROM Extractor</title><link rel="stylesheet" href="style.css?v=0.6.0"></head>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#17251d"><title>OoT DSi — ROM Extractor</title><link rel="stylesheet" href="style.css?v=0.7.0"></head>
 <body><main class="panel"><p class="eyebrow">OOT DSI PROJECT</p><h1>ROM File Extractor</h1>
 <p class="intro">Unpack the game-data files from your Ocarina of Time ROM. Everything happens locally in your browser.</p>
 <section class="notice"><strong>Your ROM stays private</strong><p>The ROM is not uploaded. Choose it from your device, and the browser processes it locally. Only the extracted ZIP is downloaded.</p></section>
@@ -13,5 +13,5 @@
 <details class="dev-panel"><summary>Developer diagnostics</summary><p class="dev-note">Technical status and logs for troubleshooting.</p><div class="dev-grid">
 <div><span class="dev-state implemented" id="dev-js">Implemented</span><strong>Page JavaScript</strong><small id="dev-js-detail">Waiting for script startup.</small></div><div><span class="dev-state pending" id="dev-rom">Not checked</span><strong>ROM selection + checksum</strong><small id="dev-rom-detail">Waiting for a ROM file.</small></div><div><span class="dev-state pending" id="dev-dma">Not validated</span><strong>DMA table scanner</strong><small id="dev-dma-detail">Scanner is implemented; needs a successful ROM parse.</small></div></div>
 <p class="dev-log" id="dev-log" aria-live="polite">Diagnostic: page is loading.</p><div class="console-head"><strong>Runtime log</strong><button type="button" id="clear-console">Clear</button></div><div id="dev-console" class="dev-console" role="log" aria-live="polite"><div class="console-line info">[BOOT] Waiting for extractor script…</div></div></details>
-<p class="foot">OoT DSi · Local ROM extractor · Version 0.6.0</p><p class="foot">Do not commit ROM data or extracted assets to the public repository.</p></main>
-<script>window.addEventListener("error",function(e){var s=document.getElementById("status");if(s)s.textContent="Page error: "+(e.message||"script failed");},true);</script><script src="app.js?v=0.6.0" onerror="document.getElementById('status').textContent='Could not load app.js.'"></script></body></html>
+<p class="foot">OoT DSi · Local ROM extractor · Version 0.7.0</p><p class="foot">Do not commit ROM data or extracted assets to the public repository.</p></main>
+<script>window.addEventListener("error",function(e){var s=document.getElementById("status");if(s)s.textContent="Page error: "+(e.message||"script failed");},true);</script><script src="app.js?v=0.7.0" onerror="document.getElementById('status').textContent='Could not load app.js.'"></script></body></html>
