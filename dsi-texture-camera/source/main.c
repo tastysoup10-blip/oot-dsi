@@ -140,8 +140,9 @@ int main(void)
         if (keys & KEY_RIGHT) camera_x += 0.035f;
         if (keys & KEY_UP)    camera_z -= 0.045f;
         if (keys & KEY_DOWN)  camera_z += 0.045f;
-        if (keys & KEY_L)     camera_y += 0.035f;
-        if (keys & KEY_R)     camera_y -= 0.035f;
+        // Make vertical movement more noticeable, and show raw button detection below.
+        if (keys & KEY_L)     camera_y += 0.06f;
+        if (keys & KEY_R)     camera_y -= 0.06f;
 
         if (keys & KEY_A)
         {
@@ -170,7 +171,8 @@ int main(void)
         printf("L/R: camera height\n");
         printf("A: reset camera\n");
         printf("START: exit\n\n");
-        printf("Camera: %.1f %.1f %.1f", camera_x, camera_y, camera_z);
+        printf("Camera: %.1f %.1f %.1f\\n", camera_x, camera_y, camera_z);
+        printf("Keys: 0x%04X", keys);
 
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
