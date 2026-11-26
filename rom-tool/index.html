@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#17251d"><title>OoT DSi — ROM Asset Extractor</title>
-<link rel="stylesheet" href="style.css?v=0.2.2">
+<link rel="stylesheet" href="style.css?v=0.3.0">
 </head>
 <body><main class="panel">
 <p class="eyebrow">OOT DSI PROJECT</p><h1>ROM Asset Extractor</h1>
@@ -19,7 +19,22 @@
 <label for="filter">Filter files</label><input id="filter" type="search" placeholder="e.g. 0x00A87000 or file 27">
 <div class="table-wrap"><table><thead><tr><th>#</th><th>VROM start</th><th>Size</th><th>Storage</th><th>Action</th></tr></thead><tbody id="files"></tbody></table></div>
 </section>
+<details class="dev-panel" open>
+<summary>Developer panel · implementation status</summary>
+<p class="dev-note">Green means implemented in the page; amber means present but not yet validated against your ROM; gray means not built yet. These are software-status indicators, not claims that every feature has passed testing.</p>
+<div class="dev-grid">
+<div><span class="dev-state implemented" id="dev-js">Implemented</span><strong>Page JavaScript</strong><small id="dev-js-detail">Waiting for script startup.</small></div>
+<div><span class="dev-state pending" id="dev-rom">Not checked</span><strong>ROM selection + checksum</strong><small id="dev-rom-detail">Waiting for a ROM file.</small></div>
+<div><span class="dev-state pending" id="dev-dma">Not validated</span><strong>DMA table scanner</strong><small id="dev-dma-detail">Scanner is implemented; needs a successful ROM parse.</small></div>
+<div><span class="dev-state implemented">Implemented</span><strong>Raw DMA extraction</strong><small>Code is present; individual file output depends on a valid DMA parse.</small></div>
+<div><span class="dev-state implemented">Implemented</span><strong>Yaz0 decompression</strong><small>Code is present; output depends on valid compressed-file data.</small></div>
+<div><span class="dev-state missing">Not built</span><strong>Identify Link's object</strong><small>No object-name mapping or Link-object locator yet.</small></div>
+<div><span class="dev-state missing">Not built</span><strong>N64 model decoding</strong><small>No display-list, skeleton, animation, or texture conversion yet.</small></div>
+<div><span class="dev-state missing">Not built</span><strong>DSi-ready model export</strong><small>No complete OoT-to-DSi model pipeline yet.</small></div>
+</div>
+<p class="dev-log" id="dev-log" aria-live="polite">Diagnostic: page is loading.</p>
+</details>
 <section class="notice muted"><strong>What this version extracts</strong><p>Individual DMA files, including raw files and Yaz0-compressed files (automatically decompressed). The retail ROM does not contain friendly filenames, so files are shown by index and address. This version does not yet identify Link's object or convert N64 display lists into a DSi mesh.</p></section>
-<p class="foot">ROM Asset Extractor · Version 0.2.1</p>
+<p class="foot">ROM Asset Extractor · Version 0.3.0</p>
 <p class="foot">Nothing is saved by this page. Keep extracted files on your device; do not commit ROM data or extracted assets to the public repository.</p>
-</main><script src="app.js?v=0.2.2"></script></body></html>
+</main><script src="app.js?v=0.3.0"></script></body></html>
