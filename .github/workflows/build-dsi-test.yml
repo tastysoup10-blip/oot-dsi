@@ -11,6 +11,7 @@ on:
     paths:
       - "dsi-test/**"
       - "dsi-texture-camera/**"
+      - "dsi-terrain/**"
       - ".github/workflows/build-dsi-test.yml"
   workflow_dispatch:
 
@@ -31,6 +32,10 @@ jobs:
         run: make
         working-directory: dsi-texture-camera
 
+      - name: Build terrain test
+        run: make
+        working-directory: dsi-terrain
+
       - name: Upload .nds build
         uses: actions/upload-artifact@v4
         with:
@@ -38,5 +43,6 @@ jobs:
           path: |
             dsi-test/*.nds
             dsi-texture-camera/*.nds
+            dsi-terrain/*.nds
           if-no-files-found: error
           retention-days: 30
