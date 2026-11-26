@@ -38,6 +38,23 @@ jobs:
           emcc --version
           em++ --version
 
+      - name: Apply WebAssembly compatibility fixes
+        working-directory: upstream-zapd/tools/ZAPD
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path("ZAPD/CrashHandler.cpp")
+          s = p.read_text()
+          s = s.replace("#if __has_include(<unistd.h>)", "#if __has_include(<unistd.h>) && !defined(__EMSCRIPTEN__)")
+          p.write_text(s)
+          p = Path("ZAPDUtils/Utils/StringHelper.h")
+          s = p.read_text()
+          if "#include <cstdlib>" not in s:
+              s = s.replace("#include <cstring>", "#include <cstring>\\n#include <cstdlib>")
+          s = s.replace("std::strtoull(", "strtoull(")
+          p.write_text(s)
+          PY
+
       - name: Attempt ZAPD WebAssembly build
         working-directory: upstream-zapd/tools/ZAPD
         env:
