@@ -102,21 +102,24 @@ function findAdultLinkObject(){
  const adultStart=0x00F84000,adultEnd=0x00FBB800;
  const childStart=0x00FBC000,childEnd=0x00FE8F80;
  const hits=[];
- // Object table has 402 consecutive 8-byte RomFile records; object IDs
- // 0x14 and 0x15 must match the Adult/Child Link VROM ranges.
- for(let base=0;base+402*8<=code.length;base+=4){
-  if(view.getUint32(base,false)!==0||view.getUint32(base+4,false)!==0)continue;
-  const a=base+0x14*8,c=base+0x15*8;
+ // Object-table header: adult ID (u16), child ID (u16), object count (u32).
+ // The 402 eight-byte RomFile records begin eight bytes after this header.
+ for(let base=0;base+8+402*8<=code.length;base+=4){
+  if(view.getUint16(base,false)!==0x0014||
+     view.getUint16(base+2,false)!==0x0015||
+     view.getUint32(base+4,false)!==402)continue;
+  const records=base+8;
+  const a=records+0x14*8,c=records+0x15*8;
   if(view.getUint32(a,false)===adultStart&&view.getUint32(a+4,false)===adultEnd&&
      view.getUint32(c,false)===childStart&&view.getUint32(c+4,false)===childEnd){
-   hits.push(base);
+   hits.push({headerOffset:base,recordsOffset:records});
   }
  }
- if(hits.length!==1)throw Error("Could not uniquely verify the Link object table in code (matches: "+hits.length+"). No guessed offsets were used.");
+ if(hits.length!==1)throw Error("Could not uniquely verify the NTSC 1.2 object table (matches: "+hits.length+"). Checked its header, 402-entry count, and both Link VROM ranges.");
  const adult=dmaFiles.find(x=>x.vrom===adultStart&&x.vromEnd===adultEnd);
  const child=dmaFiles.find(x=>x.vrom===childStart&&x.vromEnd===childEnd);
  if(!adult||!child)throw Error("The Link object table was found, but its matching DMA files were not present.");
- return {adult,child,tableOffset:hits[0],codeFile};
+ return {adult,child,tableOffset:hits[0].headerOffset,recordsOffset:hits[0].recordsOffset,codeFile};
 }
 async function extractAdultLink(){
  const button=document.querySelector("#extract-link");
@@ -138,7 +141,7 @@ async function extractAdultLink(){
    romVersion:document.querySelector("#version").textContent,
    romMD5:document.querySelector("#md5").textContent,
    identification:"Object table structurally verified against both Adult Link and Child Link VROM ranges.",
-   objectTable:{codeDmaId:found.codeFile.id,codeVrom:"0x00A87000",tableOffset:"0x"+found.tableOffset.toString(16).toUpperCase(),entryCount:402},
+   objectTable:{codeDmaId:found.codeFile.id,codeVrom:"0x00A87000",headerOffset:"0x"+found.tableOffset.toString(16).toUpperCase(),recordsOffset:"0x"+found.recordsOffset.toString(16).toUpperCase(),entryCount:402},
    adultLink:{objectId:"0x0014",name:"object_link_boy",dmaId:found.adult.id,vromStart:"0x00F84000",vromEnd:"0x00FBB800",size:adultData.length,skeletonOffset:"0x377F4",limbTableOffset:"0x377A0",limbCount:21},
    childLink:{objectId:"0x0015",name:"object_link_child",dmaId:found.child.id,vromStart:"0x00FBC000",vromEnd:"0x00FE8F80",size:childData.length,skeletonOffset:"0x2CF6C",limbTableOffset:"0x2CF18",limbCount:21},
    note:"These are the original object binary files, not decoded meshes. They contain model display lists, vertex data, textures and skeleton-related data. A display-list/texture decoder is still required to produce OBJ/glTF or a DSi-ready model."
