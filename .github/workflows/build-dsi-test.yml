@@ -1,0 +1,33 @@
+name: Build DSi 3D test
+
+on:
+  push:
+    paths:
+      - "dsi-test/**"
+      - ".github/workflows/build-dsi-test.yml"
+  pull_request:
+    paths:
+      - "dsi-test/**"
+      - ".github/workflows/build-dsi-test.yml"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: skylyrac/blocksds:slim-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Build Nintendo DS/DSi ROM
+        run: make
+        working-directory: dsi-test
+
+      - name: Upload .nds build
+        uses: actions/upload-artifact@v4
+        with:
+          name: oot-dsi-3d-test
+          path: dsi-test/*.nds
+          if-no-files-found: error
+          retention-days: 14
