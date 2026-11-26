@@ -85,6 +85,67 @@ async function handleRomSelection(){const file=input.files?.[0];if(!file||file==
 input.addEventListener("change",handleRomSelection);
 input.addEventListener("input",handleRomSelection);
 filter.addEventListener("input",render);
-document.querySelector("#extract-all")?.addEventListener("click",extractAll);
+document.querySelector("#extract-all")?.addEventListener("click",extractAll);\ndocument.querySelector("#extract-link")?.addEventListener("click",extractAdultLink);
 
 document.querySelector("#clear-console")?.addEventListener("click",()=>{document.querySelector("#dev-console").replaceChildren();devLog("info","Console cleared by user.");});
+
+// Adult Link asset identification for the verified NTSC 1.2 ROM.
+// The object IDs are not DMA IDs. Resolve the object table by matching its
+// two known RomFile ranges, then map those ranges back to the DMA filesystem.
+function findAdultLinkObject(){
+ const codeFile=dmaFiles.find(x=>x.vrom===0x00A87000);
+ if(!codeFile)throw Error("Could not find the NTSC 1.2 code segment in the DMA table.");
+ let code=rom.slice(codeFile.romStart,codeFile.romEnd);
+ if(codeFile.compressed)code=yaz0(code,codeFile.size);
+ const view=new DataView(code.buffer,code.byteOffset,code.byteLength);
+ const adultStart=0x00F84000,adultEnd=0x00FBB800;
+ const childStart=0x00FBC000,childEnd=0x00FE8F80;
+ const hits=[];
+ // Object table has 402 consecutive 8-byte RomFile records; object IDs
+ // 0x14 and 0x15 must match the Adult/Child Link VROM ranges.
+ for(let base=0;base+402*8<=code.length;base+=4){
+  if(view.getUint32(base,false)!==0||view.getUint32(base+4,false)!==0)continue;
+  const a=base+0x14*8,c=base+0x15*8;
+  if(view.getUint32(a,false)===adultStart&&view.getUint32(a+4,false)===adultEnd&&
+     view.getUint32(c,false)===childStart&&view.getUint32(c+4,false)===childEnd){
+   hits.push(base);
+  }
+ }
+ if(hits.length!==1)throw Error("Could not uniquely verify the Link object table in code (matches: "+hits.length+"). No guessed offsets were used.");
+ const adult=dmaFiles.find(x=>x.vrom===adultStart&&x.vromEnd===adultEnd);
+ const child=dmaFiles.find(x=>x.vrom===childStart&&x.vromEnd===childEnd);
+ if(!adult||!child)throw Error("The Link object table was found, but its matching DMA files were not present.");
+ return {adult,child,tableOffset:hits[0],codeFile};
+}
+async function extractAdultLink(){
+ const button=document.querySelector("#extract-link");
+ if(!rom||!dmaFiles.length)return;
+ button.disabled=true;
+ try{
+  status("Verifying the Link object table and preparing the asset bundle…");
+  const found=findAdultLinkObject();
+  const getData=f=>{let b=rom.slice(f.romStart,f.romEnd);return f.compressed?yaz0(b,f.size):b};
+  const adultData=getData(found.adult),childData=getData(found.child);
+  const report={
+   title:"Ocarina of Time — Link object assets",
+   romVersion:document.querySelector("#version").textContent,
+   romMD5:document.querySelector("#md5").textContent,
+   identification:"Object table structurally verified against both Adult Link and Child Link VROM ranges.",
+   objectTable:{codeDmaId:found.codeFile.id,codeVrom:"0x00A87000",tableOffset:"0x"+found.tableOffset.toString(16).toUpperCase(),entryCount:402},
+   adultLink:{objectId:"0x0014",name:"object_link_boy",dmaId:found.adult.id,vromStart:"0x00F84000",vromEnd:"0x00FBB800",size:adultData.length,skeletonOffset:"0x377F4",limbTableOffset:"0x377A0",limbCount:21},
+   childLink:{objectId:"0x0015",name:"object_link_child",dmaId:found.child.id,vromStart:"0x00FBC000",vromEnd:"0x00FE8F80",size:childData.length,skeletonOffset:"0x2CF6C",limbTableOffset:"0x2CF18",limbCount:21},
+   note:"These are the original object binary files, not decoded meshes. They contain model display lists, vertex data, textures and skeleton-related data. A display-list/texture decoder is still required to produce OBJ/glTF or a DSi-ready model."
+  };
+  const blob=zipStore([
+   {name:"adult/object_link_boy.bin",data:adultData},
+   {name:"child/object_link_child.bin",data:childData},
+   {name:"link-asset-report.json",data:encUtf8(JSON.stringify(report,null,2))},
+   {name:"README.txt",data:encUtf8("This bundle contains the verified Adult Link and Child Link object binaries from your locally selected NTSC 1.2 ROM.\n\nThe .bin files are not directly viewable 3D models. Adult Link skeleton metadata: skeleton offset 0x377F4; limb table offset 0x377A0; 21 limbs. Child Link: skeleton offset 0x2CF6C; limb table offset 0x2CF18; 21 limbs.\n\nNext conversion step: decode the N64 display lists, vertices, textures and skeleton into a standard model format. No ROM data was uploaded.") }
+  ]);
+  const url=URL.createObjectURL(blob),a=document.createElement("a");
+  a.href=url;a.download="oot-link-object-assets-ntsc-1.2.zip";a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),30000);
+  status("Adult and Child Link object assets extracted and verified. The ZIP contains original object binaries plus offsets and a report.","good");
+ }catch(e){status("Link asset extraction failed: "+e.message,"bad");devLog("error","Link asset extraction: "+e.message)}
+ finally{button.disabled=false}
+}
