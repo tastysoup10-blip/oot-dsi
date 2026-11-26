@@ -85,11 +85,14 @@ jobs:
 
       - name: Verify WebAssembly output
         run: |
-          test -f upstream-zapd/tools/ZAPD/ZAPD.out
+          set -eux
+          ls -lah upstream-zapd/tools/ZAPD/ZAPD.out*
           file upstream-zapd/tools/ZAPD/ZAPD.out
+          test -f upstream-zapd/tools/ZAPD/ZAPD.out
           cp upstream-zapd/tools/ZAPD/ZAPD.out zapd.js
-          test -f upstream-zapd/tools/ZAPD/ZAPD.out.wasm
-          cp upstream-zapd/tools/ZAPD/ZAPD.out.wasm zapd.wasm
+          wasm_file="$(find upstream-zapd/tools/ZAPD -maxdepth 2 -type f -name '*.wasm' -print -quit)"
+          test -n "$wasm_file"
+          cp "$wasm_file" zapd.wasm
           ls -lh zapd.js zapd.wasm
 
       - name: Upload experimental build
