@@ -193,7 +193,7 @@ int main(void)
         glRotateY(object_angle);
         glRotateX(18);
         draw_textured_cube();
-        glPopMatrix();
+        glPopMatrix(1);
         glFlush(0);
     }
 
