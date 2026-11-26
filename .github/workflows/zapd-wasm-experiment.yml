@@ -1,0 +1,68 @@
+name: Experimental ZAPD WebAssembly build
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-zapd-wasm:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out this repository
+        uses: actions/checkout@v4
+
+      - name: Check out ZAPD source
+        uses: actions/checkout@v4
+        with:
+          repository: zeldaret/mm
+          path: upstream-zapd
+          sparse-checkout: |
+            tools/ZAPD
+          sparse-checkout-cone-mode: true
+
+      - name: Set up Emscripten
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: latest
+          actions-cache-folder: emsdk-cache
+
+      - name: Install native build helpers
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y make python3
+
+      - name: Show compiler versions
+        run: |
+          emcc --version
+          em++ --version
+
+      - name: Attempt ZAPD WebAssembly build
+        working-directory: upstream-zapd/tools/ZAPD
+        env:
+          CXX: em++
+          OPTIMIZATION_ON: "1"
+          DEPRECATION_ON: "0"
+          LLD: "0"
+        run: |
+          emmake make -j2 CXX=em++ \
+            'CXXFLAGS=-std=c++17 -O2 -I ZAPD -I lib/libgfxd -I lib/tinyxml2 -I ZAPDUtils' \
+            'LDFLAGS=-lm -sUSE_LIBPNG=1 -sALLOW_MEMORY_GROWTH=1 -sFORCE_FILESYSTEM=1' \
+            ZAPD.out
+
+      - name: Verify WebAssembly output
+        run: |
+          test -f upstream-zapd/tools/ZAPD/ZAPD.out
+          file upstream-zapd/tools/ZAPD/ZAPD.out
+          cp upstream-zapd/tools/ZAPD/ZAPD.out zapd.js
+          ls -lh zapd.js
+
+      - name: Upload experimental build
+        uses: actions/upload-artifact@v4
+        with:
+          name: zapd-wasm-experiment
+          path: |
+            zapd.js
+          if-no-files-found: error
+          retention-days: 7
