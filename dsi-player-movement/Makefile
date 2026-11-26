@@ -7,4 +7,7 @@ NAME         := oot_dsi_player_movement
 GAME_TITLE   := OOT DSi Player
 GAME_SUBTITLE:= Player movement prototype
 
+# Compile every C source in this prototype, including the skeleton module.
+SOURCES := source
+
 include $(BLOCKSDS)/sys/default_makefiles/rom_arm9/Makefile
