@@ -43,16 +43,25 @@ jobs:
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          p = Path("ZAPD/CrashHandler.cpp")
-          s = p.read_text()
-          s = s.replace("#if __has_include(<unistd.h>)", "#if __has_include(<unistd.h>) && !defined(__EMSCRIPTEN__)")
-          p.write_text(s)
-          p = Path("ZAPDUtils/Utils/StringHelper.h")
-          s = p.read_text()
-          if "#include <cstdlib>" not in s:
-              s = s.replace("#include <cstring>", "#include <cstring>\\n#include <cstdlib>")
-          s = s.replace("std::strtoull(", "strtoull(")
-          p.write_text(s)
+
+          crash = Path("ZAPD/CrashHandler.cpp")
+          source = crash.read_text()
+          old_include = '#include "CrashHandler.h"'
+          new_include = old_include + '\n#include "WarningHandler.h"'
+          if new_include not in source:
+              if source.count(old_include) != 1:
+                  raise SystemExit("Could not safely locate CrashHandler.h include")
+              source = source.replace(old_include, new_include, 1)
+          crash.write_text(source)
+
+          helper = Path("ZAPDUtils/Utils/StringHelper.h")
+          source = helper.read_text()
+          if "#include <cstdlib>" not in source:
+              include = "#include <cstring>"
+              if source.count(include) != 1:
+                  raise SystemExit("Could not safely locate cstring include")
+              source = source.replace(include, include + "\\n#include <cstdlib>", 1)
+          helper.write_text(source)
           PY
 
       - name: Attempt ZAPD WebAssembly build
