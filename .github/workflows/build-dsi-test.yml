@@ -9,6 +9,7 @@ on:
   pull_request:
     paths:
       - "dsi-test/**"
+      - "dsi-texture-camera/**"
       - ".github/workflows/build-dsi-test.yml"
   workflow_dispatch:
 
