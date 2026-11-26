@@ -88,3 +88,19 @@ This is an architectural hypothesis based on the files above. It does not yet pr
 5. Inspect memory allocation and scene/object loading to estimate the runtime memory footprint.
 
 No ROM or extracted game assets were downloaded or added.
+
+### Frame and thread flow traced from source
+
+The following symbols were located by reading the current upstream source:
+
+- `Main()` in `src/code/main.c` creates and starts the graphics thread with `Graph_ThreadEntry`, initializes the pad manager, and then waits on an interrupt-manager message queue.
+- `Graph_ThreadEntry()` in `src/code/graph.c` initializes the graphics context and runs the game-state / graphics loop.
+- `Graph_Update()` builds a graphics frame/task and sends the task to the scheduler command queue.
+- `GameState_Update()` in `src/code/game.c` is the game-state update entry point.
+- `GameState_ReqPadData()` requests controller data through `PadMgr_RequestPadData()`.
+- `GameState_Draw()` and `GameState_SetFrameBuffer()` participate in drawing and framebuffer handling.
+- `Graph_TaskSet00()` waits for graphics-task messages and handles task completion; `Graph_FaultClient()` uses `osViSwapBuffer()` for video buffer swapping.
+
+**What this tells us:** the original program is not a single simple loop that updates and draws everything on one thread. It coordinates game-state work, input, graphics, and scheduling through N64 operating-system-style threads and message queues. A DSi implementation will need its own frame coordination model, even if some game-state logic can be retained.
+
+**Still unverified:** exact timing behavior, task priority requirements, which parts of the scheduler are essential to gameplay, and the cleanest seam for replacing the graphics task system. Those require following the called functions and data structures further.
