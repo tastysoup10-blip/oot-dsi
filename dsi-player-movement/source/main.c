@@ -161,7 +161,6 @@ int main(void)
     videoSetMode(MODE_0_3D);
     glInit();
     glEnable(GL_ANTIALIAS);
-    glEnable(GL_DEPTH_TEST);
     glClearColor(4, 6, 12, 31);
     glClearPolyID(63);
     glClearDepth(0x7FFF);
@@ -199,8 +198,6 @@ int main(void)
         printf("Pos: %.2f, %.2f\n", player.x, player.z);
         printf("Facing: %.0f deg", player.yaw);
 
-        // Clear color and depth every frame to avoid stale depth values.
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
         gluLookAt(cam_x, 2.8f, cam_z,
@@ -209,7 +206,8 @@ int main(void)
         glPolyFmt(POLY_ALPHA(31) | POLY_CULL_NONE);
         draw_terrain();
         draw_player(&player);
-        glFlush(0);
+        // W-buffering gives better depth precision for this 3D scene.
+        glFlush(GL_WBUFFERING);
     }
 
     return 0;
