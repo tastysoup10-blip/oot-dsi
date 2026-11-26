@@ -34,7 +34,7 @@ Do not rename or replace other files on the SD card. Keep a backup of the card b
 
 ## Current limitation
 
-The source has been prepared from the BlocksDS SDK's public `basic_cube` example, but it has **not yet been compiled or tested on hardware**. A successful build and real-DSi test are still required.
+This prototype has been compiled with the BlocksDS GitHub Actions workflow and confirmed working on a physical Nintendo DSi. The newer `dsi-texture-camera` prototype builds on this baseline.
 
 ## References
 
