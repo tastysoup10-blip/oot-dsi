@@ -79,7 +79,7 @@ jobs:
           LLD: "0"
         run: |
           emmake make -j2 CXX=em++ \
-            'CXXFLAGS=-std=c++17 -O2 -I ZAPD -I lib/libgfxd -I lib/tinyxml2 -I ZAPDUtils' \
+            'CXXFLAGS=-std=c++17 -O2 -sUSE_LIBPNG=1 -I ZAPD -I lib/libgfxd -I lib/tinyxml2 -I ZAPDUtils' \
             'LDFLAGS=-lm -sUSE_LIBPNG=1 -sALLOW_MEMORY_GROWTH=1 -sFORCE_FILESYSTEM=1' \
             ZAPD.out
 
