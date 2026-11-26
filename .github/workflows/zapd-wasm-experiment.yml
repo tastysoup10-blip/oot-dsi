@@ -95,6 +95,25 @@ jobs:
           cp "$wasm_file" zapd.wasm
           ls -lh zapd.js zapd.wasm
 
+      - name: Smoke-test ZAPD runtime
+        run: |
+          set -euxo pipefail
+          node --version
+          set +e
+          timeout 30s node zapd.js --help > zapd-smoke-test.txt 2>&1
+          status=$?
+          set -e
+          cat zapd-smoke-test.txt
+          if [ "$status" -eq 124 ]; then
+            echo "ZAPD timed out during startup" >&2
+            exit 1
+          fi
+          if [ "$status" -gt 1 ]; then
+            echo "ZAPD exited with unexpected status $status" >&2
+            exit "$status"
+          fi
+          test -s zapd-smoke-test.txt
+
       - name: Upload experimental build
         uses: actions/upload-artifact@v4
         with:
