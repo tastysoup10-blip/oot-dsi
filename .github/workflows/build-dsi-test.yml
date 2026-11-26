@@ -5,7 +5,8 @@ on:
     paths:
       - "dsi-test/**"
       - "dsi-texture-camera/**"
-      - "dsi-terrain/**"\n      - "dsi-player-movement/**"
+      - "dsi-terrain/**"
+      - "dsi-player-movement/**"
       - ".github/workflows/build-dsi-test.yml"
   pull_request:
     paths:
@@ -36,13 +37,18 @@ jobs:
         run: make
         working-directory: dsi-terrain
 
-      - name: Build player movement test\n        run: make\n        working-directory: dsi-player-movement\n\n      - name: Upload .nds build
+      - name: Build player movement test
+        run: make
+        working-directory: dsi-player-movement
+
+      - name: Upload .nds build
         uses: actions/upload-artifact@v4
         with:
           name: oot-dsi-3d-test
           path: |
             dsi-test/*.nds
             dsi-texture-camera/*.nds
-            dsi-terrain/*.nds\n            dsi-player-movement/*.nds
+            dsi-terrain/*.nds
+            dsi-player-movement/*.nds
           if-no-files-found: error
           retention-days: 30
