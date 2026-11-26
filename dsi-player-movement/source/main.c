@@ -113,26 +113,28 @@ static void draw_player(const Player *p)
 
 static void update_player(Player *p, uint16_t held, uint16_t down)
 {
-    const float turn_speed = 2.4f;
+    float move_x = 0.0f;
+    float move_z = 0.0f;
     float move_speed = 0.055f;
 
-    // Tank-style steering: left/right turn, up/down move along facing.
-    if (held & KEY_LEFT)  p->yaw += turn_speed;
-    if (held & KEY_RIGHT) p->yaw -= turn_speed;
-    if (p->yaw >= 360.0f) p->yaw -= 360.0f;
-    if (p->yaw < 0.0f) p->yaw += 360.0f;
-
+    // Camera-relative movement: the D-pad moves in four directions.
+    if (held & KEY_LEFT)  move_x -= 1.0f;
+    if (held & KEY_RIGHT) move_x += 1.0f;
+    if (held & KEY_UP)    move_z -= 1.0f;
+    if (held & KEY_DOWN)  move_z += 1.0f;
     if (held & KEY_B) move_speed = 0.105f;
-    if (held & KEY_UP) {
-        p->x += sinf(p->yaw * PI / 180.0f) * move_speed;
-        p->z -= cosf(p->yaw * PI / 180.0f) * move_speed;
-    }
-    if (held & KEY_DOWN) {
-        p->x -= sinf(p->yaw * PI / 180.0f) * move_speed * 0.65f;
-        p->z += cosf(p->yaw * PI / 180.0f) * move_speed * 0.65f;
+
+    // Normalize diagonals so they are not faster than straight movement.
+    if (move_x != 0.0f || move_z != 0.0f) {
+        const float length = sqrtf(move_x * move_x + move_z * move_z);
+        move_x /= length;
+        move_z /= length;
+        p->x += move_x * move_speed;
+        p->z += move_z * move_speed;
+        p->yaw = atan2f(move_x, -move_z) * 180.0f / PI;
+        if (p->yaw < 0.0f) p->yaw += 360.0f;
     }
 
-    // Simple jump arc; A is edge-triggered so holding it won't auto-hop.
     if ((down & KEY_A) && p->grounded) {
         p->vertical_velocity = 0.19f;
         p->grounded = 0;
@@ -147,7 +149,6 @@ static void update_player(Player *p, uint16_t held, uint16_t down)
         }
     }
 
-    // Keep the player inside the test island.
     if (p->x < -HALF_TERRAIN + 0.5f) p->x = -HALF_TERRAIN + 0.5f;
     if (p->x >  HALF_TERRAIN - 0.5f) p->x =  HALF_TERRAIN - 0.5f;
     if (p->z < -HALF_TERRAIN + 0.5f) p->z = -HALF_TERRAIN + 0.5f;
@@ -160,6 +161,7 @@ int main(void)
     videoSetMode(MODE_0_3D);
     glInit();
     glEnable(GL_ANTIALIAS);
+    glEnable(GL_DEPTH_TEST);
     glClearColor(4, 6, 12, 31);
     glClearPolyID(63);
     glClearDepth(0x7FFF);
@@ -183,22 +185,22 @@ int main(void)
         update_player(&player, held, down);
         frames++;
 
-        // Camera follows behind the player's facing direction.
-        const float yaw = player.yaw * PI / 180.0f;
-        const float cam_x = player.x - sinf(yaw) * 3.8f;
-        const float cam_z = player.z + cosf(yaw) * 3.8f;
+        // Keep the camera behind the player on a fixed world axis.
+        const float cam_x = player.x;
+        const float cam_z = player.z + 3.8f;
 
         consoleClear();
         printf("OOT DSi - PLAYER TEST\n");
         printf("----------------------\n");
-        printf("UP/DOWN: walk / back\n");
-        printf("LEFT/RIGHT: turn\n");
+        printf("D-PAD: move in four directions\n");
         printf("B + UP: run\n");
         printf("A: jump\n");
         printf("START: exit\n\n");
         printf("Pos: %.2f, %.2f\n", player.x, player.z);
         printf("Facing: %.0f deg", player.yaw);
 
+        // Clear color and depth every frame to avoid stale depth values.
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
         gluLookAt(cam_x, 2.8f, cam_z,
