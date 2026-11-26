@@ -17,7 +17,7 @@ This is the second native DS/DSi graphics experiment for the OOT DSi port resear
 | --- | --- |
 | D-pad left/right | Move camera left/right |
 | D-pad up/down | Move camera closer/farther |
-| L/R | Move camera height |
+| L/R | Move camera height (stronger movement; status shown on screen) |
 | A | Reset camera |
 | START | Exit |
 
@@ -35,3 +35,8 @@ The project uses BlocksDS and the same GitHub Actions workflow as the first cube
 - [ ] START returns to the homebrew launcher.
 
 A successful CI build confirms compilation only. A physical DSi test is still needed to confirm the texture and camera behavior on hardware.
+
+
+## Shoulder-button diagnostics
+
+The top-screen console now reports whether L and R are detected, plus the raw key bitmask. If the status changes to YES while pressing a shoulder button but the camera does not visibly move, report that. If it stays no, the program is not receiving that button input on the device.
