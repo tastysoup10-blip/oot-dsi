@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <nds.h>
+#include "skeleton.h"
 
 #define PI 3.14159265358979323846f
 #define TERRAIN_CELLS 16
@@ -22,6 +23,7 @@ typedef struct {
     int grounded;
     float walk_phase;
     int moving;
+    SkeletonPose pose;
 } Player;
 
 static void draw_box(float sx, float sy, float sz)
@@ -81,53 +83,56 @@ static void draw_terrain(void)
 
 static void draw_player(const Player *p)
 {
-    const float swing = p->moving ? sinf(p->walk_phase) * 24.0f : 0.0f;
     glPushMatrix();
     glTranslatef(p->x, p->y_offset, p->z);
     glRotateY((int)p->yaw);
 
-    // Green tunic/body
+    // Hierarchical rig: torso is the parent of head and arms; hips
+    // are the parent of both legs. Each child inherits its parent's transform.
     glColor3f(0.12f, 0.42f, 0.18f);
     glPushMatrix();
     glTranslatef(0.0f, 0.62f, 0.0f);
     draw_box(0.48f, 0.72f, 0.30f);
-    glPopMatrix(1);
 
-    // Head
-    glColor3f(0.82f, 0.66f, 0.48f);
+    // Head bone, attached to the top of the torso.
     glPushMatrix();
-    glTranslatef(0.0f, 1.18f, 0.0f);
+    glTranslatef(0.0f, 0.48f, 0.0f);
+    glColor3f(0.82f, 0.66f, 0.48f);
     draw_box(0.34f, 0.34f, 0.32f);
     glPopMatrix(1);
 
-    // Simple alternating leg swing while walking or running.
-    glColor3f(0.28f, 0.20f, 0.12f);
-    glPushMatrix();
-    glTranslatef(-0.13f, 0.32f, 0.0f);
-    glRotateX((int)swing);
-    glTranslatef(0.0f, -0.16f, 0.0f);
-    draw_box(0.16f, 0.32f, 0.20f);
-    glPopMatrix(1);
-    glPushMatrix();
-    glTranslatef(0.13f, 0.32f, 0.0f);
-    glRotateX((int)-swing);
-    glTranslatef(0.0f, -0.16f, 0.0f);
-    draw_box(0.16f, 0.32f, 0.20f);
-    glPopMatrix(1);
-
-    // Arms swing opposite the legs.
+    // Left and right arm bones, attached at the shoulders.
     glColor3f(0.12f, 0.42f, 0.18f);
     glPushMatrix();
-    glTranslatef(-0.30f, 0.86f, 0.0f);
-    glRotateX((int)-swing);
+    glTranslatef(-0.30f, 0.24f, 0.0f);
+    glRotateX((int)p->pose.left_arm);
     glTranslatef(0.0f, -0.20f, 0.0f);
     draw_box(0.14f, 0.40f, 0.18f);
     glPopMatrix(1);
     glPushMatrix();
-    glTranslatef(0.30f, 0.86f, 0.0f);
-    glRotateX((int)swing);
+    glTranslatef(0.30f, 0.24f, 0.0f);
+    glRotateX((int)p->pose.right_arm);
     glTranslatef(0.0f, -0.20f, 0.0f);
     draw_box(0.14f, 0.40f, 0.18f);
+    glPopMatrix(1);
+    glPopMatrix(1);
+
+    // Hip bone is the parent of both leg bones.
+    glColor3f(0.28f, 0.20f, 0.12f);
+    glPushMatrix();
+    glTranslatef(0.0f, 0.32f, 0.0f);
+    glPushMatrix();
+    glTranslatef(-0.13f, 0.0f, 0.0f);
+    glRotateX((int)p->pose.left_leg);
+    glTranslatef(0.0f, -0.16f, 0.0f);
+    draw_box(0.16f, 0.32f, 0.20f);
+    glPopMatrix(1);
+    glPushMatrix();
+    glTranslatef(0.13f, 0.0f, 0.0f);
+    glRotateX((int)p->pose.right_leg);
+    glTranslatef(0.0f, -0.16f, 0.0f);
+    draw_box(0.16f, 0.32f, 0.20f);
+    glPopMatrix(1);
     glPopMatrix(1);
 
     glPopMatrix(1);
@@ -159,6 +164,7 @@ static void update_player(Player *p, uint16_t held, uint16_t down)
         p->yaw = atan2f(move_x, -move_z) * 180.0f / PI;
         if (p->yaw < 0.0f) p->yaw += 360.0f;
     }
+    skeleton_build_walk_pose(&p->pose, p->walk_phase, p->moving);
 
     if ((down & KEY_A) && p->grounded) {
         p->vertical_velocity = 0.19f;
@@ -217,7 +223,7 @@ int main(void)
         printf("OOT DSi - PLAYER TEST\n");
         printf("----------------------\n");
         printf("D-PAD: move in four directions\n");
-        printf("B + UP: run\n");
+        printf("B: run\n");
         printf("A: jump\n");
         printf("START: exit\n\n");
         printf("Pos: %.2f, %.2f\n", player.x, player.z);
