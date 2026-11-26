@@ -25,6 +25,12 @@ This repository is separate from [ZeldaRET/oot](https://github.com/zeldaret/oot)
 
 A first-stage, browser-only ROM verifier is in [`rom-tool/`](rom-tool/). It calculates the file's MD5 locally and checks for the known NTSC 1.2 hashes. The ROM is not uploaded or transmitted. This verifier does **not** extract Link's model yet; the DMA/file parser and DSi model conversion are subsequent milestones. To publish it, enable GitHub Pages for this repository and serve the repository root; the tool will be at `/rom-tool/` under the Pages site.
 
+## Browser model converter
+
+The [`model-tool/`](model-tool/) page converts a user-supplied Wavefront OBJ mesh into a libnds C header. It runs entirely in the browser and does not upload the model. The initial converter supports geometry only (no UVs, textures, materials, or skeletal weights) and caps output at 500 triangles. The generated header exposes `draw_imported_model()`; it can be included in the player prototype after the file is placed in `dsi-player-movement/source/`.
+
+This is a general-purpose custom-model import milestone, not an extractor for Nintendo's Link assets. The current player skeleton is still a hierarchical placeholder rig; imported meshes are not yet skinned to its bones.
+
 ## Reference project
 
 - [ZeldaRET/oot](https://github.com/zeldaret/oot) — decompilation of Ocarina of Time.
