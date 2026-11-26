@@ -5,6 +5,7 @@ on:
     paths:
       - "dsi-test/**"
       - "dsi-texture-camera/**"
+      - "dsi-terrain/**"
       - ".github/workflows/build-dsi-test.yml"
   pull_request:
     paths:
