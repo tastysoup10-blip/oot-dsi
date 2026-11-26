@@ -40,6 +40,63 @@ function yaz0(src,expected){
   }
   return out;
 }
+
+// Resolve the 402-entry object table by matching its VROM pairs against the parsed DMA table.
+// The scan is deliberately conservative: ambiguous or weak matches are reported, never guessed.
+function resolveLinkObjects(){
+ const CODE_VROM=0x00A87000, OBJECT_COUNT=402, ADULT_ID=0x0014, CHILD_ID=0x0015;
+ const codeFile=dmaFiles.find(f=>f.vrom===CODE_VROM);
+ if(!codeFile)throw Error("Could not find the NTSC 1.2 code segment at VROM 0x00A87000.");
+ let code=rom.slice(codeFile.romStart,codeFile.romEnd);
+ if(codeFile.compressed)code=yaz0(code,codeFile.size);
+ const knownRanges=new Set(dmaFiles.map(f=>f.vrom+":"+f.vromEnd));
+ const view=new DataView(code.buffer,code.byteOffset,code.byteLength);
+ const bytesNeeded=OBJECT_COUNT*8,candidates=[];
+ for(let off=0;off+bytesNeeded<=code.length;off+=4){
+  let matches=0,nonzero=0;
+  for(let i=0;i<OBJECT_COUNT;i++){
+   const start=view.getUint32(off+i*8,false),end=view.getUint32(off+i*8+4,false);
+   if(start===0&&end===0){matches++;continue}
+   nonzero++;
+   if(end>start&&knownRanges.has(start+":"+end))matches++;
+  }
+  if(matches>=Math.floor(OBJECT_COUNT*0.94))candidates.push({off,matches,nonzero});
+ }
+ if(!candidates.length)throw Error("No high-confidence 402-entry object table was found inside the NTSC 1.2 code segment.");
+ candidates.sort((a,b)=>b.matches-a.matches);
+ const best=candidates[0],near=candidates.filter(c=>c.matches===best.matches&&Math.abs(c.off-best.off)>4);
+ if(near.length)throw Error("Object-table scan found multiple equally strong matches; refusing to guess.");
+ function readObject(id){
+  const p=best.off+id*8,start=view.getUint32(p,false),end=view.getUint32(p+4,false);
+  if(start===0&&end===0)return null;
+  const f=dmaFiles.find(x=>x.vrom===start&&x.vromEnd===end);
+  if(!f)throw Error("Object ID 0x"+id.toString(16)+" points to VROM 0x"+start.toString(16)+"–0x"+end.toString(16)+", which did not match a parsed DMA entry.");
+  return {id,start,end,dma:f};
+ }
+ const adult=readObject(ADULT_ID),child=readObject(CHILD_ID);
+ if(!adult||!child)throw Error("Adult or Child Link has an empty object-table entry.");
+ return {offset:best.off,score:best.matches,count:OBJECT_COUNT,adult,child};
+}
+function showLinkResolution(){
+ const panel=document.querySelector("#link-resolution"),out=document.querySelector("#link-resolution-result");
+ if(!rom||!dmaFiles.length)return;
+ const button=document.querySelector("#resolve-link");button.disabled=true;
+ try{
+  const result=resolveLinkObjects();
+  out.replaceChildren();
+  const p=document.createElement("p");p.textContent="Object table located inside code segment at offset 0x"+result.offset.toString(16).toUpperCase()+". Match score: "+result.score+"/"+result.count+".";
+  out.append(p);
+  for(const [label,item] of [["Adult Link",result.adult],["Child Link",result.child]]){
+   const d=document.createElement("p");d.textContent=label+": object ID 0x"+item.id.toString(16).padStart(4,"0")+" → DMA file "+item.dma.id+" (VROM 0x"+item.start.toString(16).toUpperCase()+"–0x"+item.end.toString(16).toUpperCase()+").";
+   out.append(d);
+   const b=document.createElement("button");b.type="button";b.textContent="Download "+label+" object";b.addEventListener("click",()=>extract(item.dma,b));out.append(b);
+  }
+  panel.hidden=false;status("Link object table resolved. You can download the adult and child object banks.","good");
+  devLog("success","Object table matched "+result.score+"/"+result.count+" entries; adult and child Link DMA files identified.");
+ }catch(e){panel.hidden=false;out.textContent="Automatic resolution unavailable: "+e.message;status("Link object resolution failed: "+e.message,"bad");devLog("warn",e.message)}
+ finally{button.disabled=false}
+}
+
 function render(){const q=filter.value.trim().toLowerCase();rows.replaceChildren();const frag=document.createDocumentFragment();for(const f of dmaFiles){const s=[String(f.id),f.vrom.toString(16),f.size.toString(16),f.compressed?"yaz0":"raw"].join(" ").toLowerCase();if(q&&!s.includes(q))continue;const tr=document.createElement("tr");for(const val of [String(f.id),"0x"+f.vrom.toString(16).toUpperCase().padStart(8,"0"),(f.size/1024).toFixed(1)+" KiB",f.compressed?"Yaz0":"Raw"]){const td=document.createElement("td");td.textContent=val;tr.append(td)}const td=document.createElement("td"),btn=document.createElement("button");btn.textContent="Extract";btn.addEventListener("click",()=>extract(f,btn));td.append(btn);tr.append(td);frag.append(tr)}rows.append(frag)}
 function extract(f,btn){try{btn.disabled=true;let data=rom.slice(f.romStart,f.romEnd);if(f.compressed)data=yaz0(data,f.size);const blob=new Blob([data],{type:"application/octet-stream"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="oot_file_"+String(f.id).padStart(4,"0")+".bin";a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);status("Extracted DMA file "+f.id+" ("+(data.length/1024).toFixed(1)+" KiB).","good")}catch(e){status("Extraction failed: "+e.message,"bad")}finally{btn.disabled=false}}
 
@@ -85,4 +142,5 @@ input.addEventListener("change",handleRomSelection);
 input.addEventListener("input",handleRomSelection);
 filter.addEventListener("input",render);
 document.querySelector("#extract-all")?.addEventListener("click",extractAll);
+document.querySelector("#resolve-link")?.addEventListener("click",showLinkResolution);
 document.querySelector("#clear-console")?.addEventListener("click",()=>{document.querySelector("#dev-console").replaceChildren();devLog("info","Console cleared by user.");});
