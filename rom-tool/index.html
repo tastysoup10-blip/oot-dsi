@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#17251d"><title>OoT DSi — ROM Asset Extractor</title>
-<link rel="stylesheet" href="style.css?v=0.3.1">
+<link rel="stylesheet" href="style.css?v=0.3.3">
 </head>
 <body><main class="panel">
 <p class="eyebrow">OOT DSI PROJECT</p><h1>ROM Asset Extractor</h1>
@@ -26,7 +26,7 @@
 <p class="intro">The XML describes a flexible 21-limb skeleton and the offsets of its model data. Once the correct DMA entry is resolved, these offsets can guide extraction of the skeleton and display lists. They are not standalone files or proof that a particular DMA row is Link.</p>
 </section>
 <section id="browser" class="details" hidden><h2>ROM files</h2><p class="intro">Search by file number, VROM address, or type. Select a row to extract its contents.</p>
-<label for="filter">Filter files</label><input id="filter" type="search" placeholder="e.g. 0x00A87000 or file 27">
+<div class="notice"><strong>Bulk asset export</strong><p>Download every present DMA entry in one ZIP. Yaz0-compressed entries are decompressed automatically. The ZIP includes a manifest with each DMA index, VROM range, size, and storage type. Everything is processed locally in this tab.</p><button type="button" id="extract-all" disabled>Extract all DMA files as ZIP</button></div><label for="filter">Filter files</label><input id="filter" type="search" placeholder="e.g. 0x00A87000 or file 27">
 <div class="table-wrap"><table><thead><tr><th>#</th><th>VROM start</th><th>Size</th><th>Storage</th><th>Action</th></tr></thead><tbody id="files"></tbody></table></div>
 </section>
 <details class="dev-panel" open>
@@ -45,6 +45,6 @@
 <p class="dev-log" id="dev-log" aria-live="polite">Diagnostic: page is loading.</p><div class="console-head"><strong>Runtime console</strong><button type="button" id="clear-console">Clear</button></div><div id="dev-console" class="dev-console" role="log" aria-live="polite"><div class="console-line info">[BOOT] Waiting for extractor script…</div></div>
 </details>
 <section class="notice muted"><strong>What this version extracts</strong><p>Individual DMA files, including raw files and Yaz0-compressed files (automatically decompressed). The retail ROM does not contain friendly filenames, so files are shown by index and address. This version does not yet identify Link's object or convert N64 display lists into a DSi mesh.</p></section>
-<p class="foot">ROM Asset Extractor · Version 0.3.2</p>
+<p class="foot">ROM Asset Extractor · Version 0.3.3</p>
 <p class="foot">Nothing is saved by this page. Keep extracted files on your device; do not commit ROM data or extracted assets to the public repository.</p>
-</main><script>window.addEventListener("error",function(e){var s=document.getElementById("status");if(s)s.textContent="Page error: "+(e.message||"script failed");},true);</script><script src="app.js?v=0.3.2" onerror="document.getElementById('status').textContent='Could not load app.js (script request failed).'"></script></body></html>
+</main><script>window.addEventListener("error",function(e){var s=document.getElementById("status");if(s)s.textContent="Page error: "+(e.message||"script failed");},true);</script><script src="app.js?v=0.3.3" onerror="document.getElementById('status').textContent='Could not load app.js (script request failed).'"></script></body></html>
