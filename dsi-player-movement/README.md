@@ -18,10 +18,13 @@ No C-stick or shoulder buttons are used.
 - Walking and running speeds
 - A basic jump arc and landing
 - A third-person camera that follows the player
-- Simple procedural leg and arm movement while walking or running
+- A reusable `SkeletonPose` data structure for limb rotations
+- A separate pose-builder module (`source/skeleton.c` / `source/skeleton.h`)
+- A hierarchical placeholder rig: torso parents the head and arms; hips parent both legs
+- Procedural leg and arm movement while walking or running
 - Bounds against the edge of the test terrain
 
-The player is original placeholder geometry. The animation is a deliberately simple procedural test, not a port of Ocarina of Time's skeletal animation system.
+The player is original placeholder geometry. This milestone introduces a small hierarchical rig and separates pose calculation from rendering. It is still a prototype: it does not yet load animation clips, skin arbitrary meshes, or reproduce Ocarina of Time's animation format.
 
 ## Relationship to the OOT source
 
