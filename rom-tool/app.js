@@ -42,9 +42,47 @@ function yaz0(src,expected){
 }
 function render(){const q=filter.value.trim().toLowerCase();rows.replaceChildren();const frag=document.createDocumentFragment();for(const f of dmaFiles){const s=[String(f.id),f.vrom.toString(16),f.size.toString(16),f.compressed?"yaz0":"raw"].join(" ").toLowerCase();if(q&&!s.includes(q))continue;const tr=document.createElement("tr");for(const val of [String(f.id),"0x"+f.vrom.toString(16).toUpperCase().padStart(8,"0"),(f.size/1024).toFixed(1)+" KiB",f.compressed?"Yaz0":"Raw"]){const td=document.createElement("td");td.textContent=val;tr.append(td)}const td=document.createElement("td"),btn=document.createElement("button");btn.textContent="Extract";btn.addEventListener("click",()=>extract(f,btn));td.append(btn);tr.append(td);frag.append(tr)}rows.append(frag)}
 function extract(f,btn){try{btn.disabled=true;let data=rom.slice(f.romStart,f.romEnd);if(f.compressed)data=yaz0(data,f.size);const blob=new Blob([data],{type:"application/octet-stream"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="oot_file_"+String(f.id).padStart(4,"0")+".bin";a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);status("Extracted DMA file "+f.id+" ("+(data.length/1024).toFixed(1)+" KiB).","good")}catch(e){status("Extraction failed: "+e.message,"bad")}finally{btn.disabled=false}}
+
+function crc32(bytes){let c=0xffffffff;for(let i=0;i<bytes.length;i++){c^=bytes[i];for(let k=0;k<8;k++)c=(c>>>1)^((c&1)?0xedb88320:0)}return(c^0xffffffff)>>>0}
+function zipStore(entries){
+ const enc=new TextEncoder(),locals=[],centrals=[];let offset=0;
+ for(const entry of entries){
+  const name=enc.encode(entry.name),data=entry.data,crc=crc32(data);
+  const lh=new Uint8Array(30+name.length),lv=new DataView(lh.buffer);
+  lv.setUint32(0,0x04034b50,true);lv.setUint16(4,20,true);lv.setUint16(6,0,true);lv.setUint16(8,0,true);
+  lv.setUint32(14,crc,true);lv.setUint32(18,data.length,true);lv.setUint32(22,data.length,true);lv.setUint16(26,name.length,true);lv.setUint16(28,0,true);lh.set(name,30);
+  locals.push(lh,data);
+  const ch=new Uint8Array(46+name.length),cv=new DataView(ch.buffer);
+  cv.setUint32(0,0x02014b50,true);cv.setUint16(4,20,true);cv.setUint16(6,20,true);cv.setUint16(8,0,true);cv.setUint16(10,0,true);
+  cv.setUint32(16,crc,true);cv.setUint32(20,data.length,true);cv.setUint32(24,data.length,true);cv.setUint16(28,name.length,true);cv.setUint16(30,0,true);cv.setUint16(32,0,true);cv.setUint16(34,0,true);cv.setUint16(36,0,true);cv.setUint32(38,0,true);cv.setUint32(42,offset,true);ch.set(name,46);
+  centrals.push(ch);offset+=lh.length+data.length;
+ }
+ const centralSize=centrals.reduce((n,x)=>n+x.length,0),end=new Uint8Array(22),ev=new DataView(end.buffer);
+ ev.setUint32(0,0x06054b50,true);ev.setUint16(4,0,true);ev.setUint16(6,0,true);ev.setUint16(8,entries.length,true);ev.setUint16(10,entries.length,true);ev.setUint32(12,centralSize,true);ev.setUint32(16,offset,true);ev.setUint16(20,0,true);
+ return new Blob([...locals,...centrals,end],{type:"application/zip"});
+}
+async function extractAll(){
+ const button=document.querySelector("#extract-all");if(!rom||!dmaFiles.length)return;
+ button.disabled=true;const entries=[],manifest={format:"OoT DSi local DMA asset archive",romVersion:document.querySelector("#version").textContent,romMD5:document.querySelector("#md5").textContent,created:new Date().toISOString(),note:"Files are extracted locally from the user-selected ROM. DMA IDs are table indexes, not ZeldaRET object IDs.",files:[]};
+ try{
+  for(let i=0;i<dmaFiles.length;i++){
+   const f=dmaFiles[i];let data=rom.slice(f.romStart,f.romEnd);if(f.compressed)data=yaz0(data,f.size);
+   const name="dma/"+String(f.id).padStart(4,"0")+".bin";entries.push({name,data});
+   manifest.files.push({dmaId:f.id,file:name,vromStart:"0x"+f.vrom.toString(16).toUpperCase(),vromEnd:"0x"+f.vromEnd.toString(16).toUpperCase(),size:data.length,storage:f.compressed?"Yaz0 (decompressed)":"raw"});
+   if(i%20===0){status("Preparing archive: "+(i+1)+" / "+dmaFiles.length+" files…");await new Promise(resolve=>setTimeout(resolve,0))}
+  }
+  entries.push({name:"manifest.json",data:encUtf8(JSON.stringify(manifest,null,2))});
+  const blob=zipStore(entries),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="oot-ntsc-1.2-all-dma-assets.zip";a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);
+  status("Archive ready: "+dmaFiles.length+" DMA files plus manifest ("+(blob.size/1048576).toFixed(2)+" MiB ZIP).","good");
+ }catch(e){status("Bulk extraction failed: "+e.message,"bad");devLog("error","Bulk extraction: "+e.message)}
+ finally{button.disabled=false}
+}
+function encUtf8(text){return new TextEncoder().encode(text)}
+
 let lastFile=null;
 async function handleRomSelection(){const file=input.files?.[0];if(!file||file===lastFile)return;lastFile=file;details.hidden=true;browser.hidden=true;dmaFiles=[];rom=null;if(!file){status("Waiting for a ROM file.");return}status("Reading ROM locally and verifying checksum…");dev("rom","Checking","Reading the selected file and calculating its checksum.","pending");logDev("file selected: "+file.name+" ("+file.size+" bytes).");devLog("info","Selected "+file.name+" ("+file.size+" bytes).");try{const source=new Uint8Array(await file.arrayBuffer());rom=normalizeRom(source);const hash=md5(rom),version=known[hash];if(!version){dev("rom","Failed","Checksum not recognized: "+hash,"missing");throw Error("This file is not a recognized NTSC 1.2 ROM (MD5: "+hash+").");}dev("rom","Verified",version+" checksum matched.","implemented");status("Verified "+version+". Locating the DMA filesystem…");dev("dma","Scanning","Searching the ROM for a valid DMA table.","pending");const dma=findDma(rom);dmaFiles=parseDma(rom,dma.base,dma.count);if(dmaFiles.length<8)throw Error("A DMA table was found, but too few valid entries were parsed.");dev("dma","Parsed",dmaFiles.length+" present DMA entries parsed from table at 0x"+dma.base.toString(16)+".","implemented");document.querySelector("#filename").textContent=file.name;document.querySelector("#filesize").textContent=(file.size/1048576).toFixed(2)+" MiB";document.querySelector("#format").textContent="Normalized N64 byte order";document.querySelector("#md5").textContent=hash;document.querySelector("#version").textContent=version;document.querySelector("#dma-location").textContent="0x"+dma.base.toString(16).toUpperCase()+" ("+dma.count+" entries)";document.querySelector("#file-count").textContent=dmaFiles.length+" present files";details.hidden=false;browser.hidden=false;render();status("Filesystem parsed. Select any file to extract it; Yaz0 files are decompressed automatically.","good");logDev("success: checksum verified; DMA table parsed; "+dmaFiles.length+" entries available.");devLog("success","DMA table parsed: "+dmaFiles.length+" files available.")}catch(e){rom=null;if((e.message||"").includes("DMA")){dev("dma","Failed",e.message,"missing")}status(e.message||String(e),"bad");logDev("error: "+(e.message||String(e)));devLog("error",e.message||String(e))}}
 input.addEventListener("change",handleRomSelection);
 input.addEventListener("input",handleRomSelection);
 filter.addEventListener("input",render);
+document.querySelector("#extract-all")?.addEventListener("click",extractAll);
 document.querySelector("#clear-console")?.addEventListener("click",()=>{document.querySelector("#dev-console").replaceChildren();devLog("info","Console cleared by user.");});
