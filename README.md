@@ -21,6 +21,10 @@ This repository is separate from [ZeldaRET/oot](https://github.com/zeldaret/oot)
 3. [Initial engine reconnaissance](docs/ENGINE_RECONNAISSANCE.md)
 4. [Chromebook and Codespaces workflow](docs/CHROMEBOOK_WORKFLOW.md)
 
+## Browser ROM tool
+
+A first-stage, browser-only ROM verifier is in [`rom-tool/`](rom-tool/). It calculates the file's MD5 locally and checks for the known NTSC 1.2 hashes. The ROM is not uploaded or transmitted. This verifier does **not** extract Link's model yet; the DMA/file parser and DSi model conversion are subsequent milestones. To publish it, enable GitHub Pages for this repository and serve the repository root; the tool will be at `/rom-tool/` under the Pages site.
+
 ## Reference project
 
 - [ZeldaRET/oot](https://github.com/zeldaret/oot) — decompilation of Ocarina of Time.
