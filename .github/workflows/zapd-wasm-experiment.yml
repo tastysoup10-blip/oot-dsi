@@ -119,7 +119,8 @@ jobs:
         run: |
           set -euxo pipefail
           mkdir -p zapd-fixture/baserom zapd-fixture/output
-          printf '\\x00\\x11\\x22\\x33\\x44\\x55\\x66\\x77' > zapd-fixture/baserom/test_asset.bin
+          printf '\x00\x11\x22\x33\x44\x55\x66\x77' > zapd-fixture/baserom/test_asset
+          test "$(wc -c < zapd-fixture/baserom/test_asset)" -eq 8
           cat > zapd-fixture/test_asset.xml <<'XML'
           <Root>
             <File Name="test_asset">
