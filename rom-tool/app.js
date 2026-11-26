@@ -140,7 +140,13 @@ async function extractAdultLink(){
    {name:"adult/object_link_boy.bin",data:adultData},
    {name:"child/object_link_child.bin",data:childData},
    {name:"link-asset-report.json",data:encUtf8(JSON.stringify(report,null,2))},
-   {name:"README.txt",data:encUtf8("This bundle contains the verified Adult Link and Child Link object binaries from your locally selected NTSC 1.2 ROM.\n\nThe .bin files are not directly viewable 3D models. Adult Link skeleton metadata: skeleton offset 0x377F4; limb table offset 0x377A0; 21 limbs. Child Link: skeleton offset 0x2CF6C; limb table offset 0x2CF18; 21 limbs.\n\nNext conversion step: decode the N64 display lists, vertices, textures and skeleton into a standard model format. No ROM data was uploaded.") }
+   {name:"README.txt",data:encUtf8([
+    "This bundle contains the verified Adult Link and Child Link object binaries from your locally selected NTSC 1.2 ROM.",
+    "",
+    "The .bin files are not directly viewable 3D models. Adult Link skeleton metadata: skeleton offset 0x377F4; limb table offset 0x377A0; 21 limbs. Child Link: skeleton offset 0x2CF6C; limb table offset 0x2CF18; 21 limbs.",
+    "",
+    "Next conversion step: decode the N64 display lists, vertices, textures and skeleton into a standard model format. No ROM data was uploaded."
+   ].join(String.fromCharCode(10))) }
   ]);
   const url=URL.createObjectURL(blob),a=document.createElement("a");
   a.href=url;a.download="oot-link-object-assets-ntsc-1.2.zip";a.click();
