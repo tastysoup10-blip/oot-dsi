@@ -1,9 +1,10 @@
-name: Build DSi 3D test
+name: Build DSi graphics prototypes
 
 on:
   push:
     paths:
       - "dsi-test/**"
+      - "dsi-texture-camera/**"
       - ".github/workflows/build-dsi-test.yml"
   pull_request:
     paths:
@@ -20,14 +21,20 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Build Nintendo DS/DSi ROM
+      - name: Build original cube test
         run: make
         working-directory: dsi-test
+
+      - name: Build textured camera test
+        run: make
+        working-directory: dsi-texture-camera
 
       - name: Upload .nds build
         uses: actions/upload-artifact@v4
         with:
           name: oot-dsi-3d-test
-          path: dsi-test/*.nds
+          path: |
+            dsi-test/*.nds
+            dsi-texture-camera/*.nds
           if-no-files-found: error
           retention-days: 14
