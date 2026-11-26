@@ -1,40 +1,24 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#17251d">
-  <title>OoT DSi — ROM Tool</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#17251d"><title>OoT DSi — ROM Asset Extractor</title>
+<link rel="stylesheet" href="style.css">
 </head>
-<body>
-  <main class="panel">
-    <p class="eyebrow">OOT DSI PROJECT</p>
-    <h1>ROM Tool</h1><p><a href="../model-tool/">Open the OBJ Model Converter →</a></p>
-    <p class="intro">A browser-based tool for preparing your own Ocarina of Time ROM for the DSi port project.</p>
-    <section class="notice">
-      <strong>Private by design</strong>
-      <p>Your selected ROM is read locally in this browser. This page does not upload it or send it to a server.</p>
-    </section>
-    <label class="file-label" for="rom">Choose your .z64 ROM</label>
-    <input id="rom" type="file" accept=".z64,.n64,.v64,application/octet-stream">
-    <div id="status" class="status" role="status" aria-live="polite">Waiting for a ROM file.</div>
-    <section id="details" class="details" hidden>
-      <h2>ROM information</h2>
-      <dl>
-        <dt>File</dt><dd id="filename"></dd>
-        <dt>Size</dt><dd id="filesize"></dd>
-        <dt>Format</dt><dd id="format"></dd>
-        <dt>MD5</dt><dd id="md5"></dd>
-        <dt>Version</dt><dd id="version"></dd>
-      </dl>
-    </section>
-    <section class="notice muted">
-      <strong>Current stage: verification</strong>
-      <p>This first version identifies the supported NTSC 1.2 ROM. It does not yet extract the Link model. The next stage is parsing the ROM's file table and exporting the required model data.</p>
-    </section>
-    <p class="foot">No ROM data is stored by this page. Closing or refreshing the tab clears the selected file.</p>
-  </main>
-  <script src="app.js"></script>
-</body>
-</html>
+<body><main class="panel">
+<p class="eyebrow">OOT DSI PROJECT</p><h1>ROM Asset Extractor</h1>
+<p><a href="../model-tool/">Open OBJ Model Converter →</a></p>
+<p class="intro">Read the ROM's DMA filesystem, inspect its files, and extract individual files locally. This is the first real extraction stage; model decoding comes next.</p>
+<section class="notice"><strong>Private by design</strong><p>The ROM stays in this browser tab. No upload, server processing, or asset storage. Extracted files are downloaded directly to your device.</p></section>
+<label class="file-label" for="rom">Choose your NTSC 1.2 .z64 ROM</label><input id="rom" type="file" accept=".z64,.n64,.v64,application/octet-stream">
+<div id="status" class="status" role="status" aria-live="polite">Waiting for a ROM file.</div>
+<section id="details" class="details" hidden><h2>ROM information</h2><dl>
+<dt>File</dt><dd id="filename"></dd><dt>Size</dt><dd id="filesize"></dd><dt>Format</dt><dd id="format"></dd><dt>MD5</dt><dd id="md5"></dd><dt>Version</dt><dd id="version"></dd><dt>DMA table</dt><dd id="dma-location"></dd><dt>Files found</dt><dd id="file-count"></dd>
+</dl></section>
+<section id="browser" class="details" hidden><h2>ROM files</h2><p class="intro">Search by file number, VROM address, or type. Select a row to extract its contents.</p>
+<label for="filter">Filter files</label><input id="filter" type="search" placeholder="e.g. 0x00A87000 or file 27">
+<div class="table-wrap"><table><thead><tr><th>#</th><th>VROM start</th><th>Size</th><th>Storage</th><th>Action</th></tr></thead><tbody id="files"></tbody></table></div>
+</section>
+<section class="notice muted"><strong>What this version extracts</strong><p>Individual DMA files, including raw files and Yaz0-compressed files (automatically decompressed). The retail ROM does not contain friendly filenames, so files are shown by index and address. This version does not yet identify Link's object or convert N64 display lists into a DSi mesh.</p></section>
+<p class="foot">Nothing is saved by this page. Keep extracted files on your device; do not commit ROM data or extracted assets to the public repository.</p>
+</main><script src="app.js"></script></body></html>
