@@ -93,7 +93,8 @@ jobs:
           wasm_file="$(find upstream-zapd/tools/ZAPD -maxdepth 2 -type f -name '*.wasm' -print -quit)"
           test -n "$wasm_file"
           cp "$wasm_file" zapd.wasm
-          ls -lh zapd.js zapd.wasm
+          cp zapd.wasm ZAPD.wasm
+          ls -lh zapd.js zapd.wasm ZAPD.wasm
 
       - name: Smoke-test ZAPD runtime
         run: |
@@ -117,7 +118,6 @@ jobs:
       - name: Test ZAPD extraction with synthetic fixture
         run: |
           set -euxo pipefail
-          cp zapd.wasm ZAPD.wasm
           mkdir -p zapd-fixture/baserom zapd-fixture/output
           printf '\\x00\\x11\\x22\\x33\\x44\\x55\\x66\\x77' > zapd-fixture/baserom/test_asset.bin
           cat > zapd-fixture/test_asset.xml <<'XML'
