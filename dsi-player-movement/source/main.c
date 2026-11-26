@@ -20,6 +20,8 @@ typedef struct {
     float vertical_velocity;
     float y_offset;
     int grounded;
+    float walk_phase;
+    int moving;
 } Player;
 
 static void draw_box(float sx, float sy, float sz)
@@ -79,6 +81,7 @@ static void draw_terrain(void)
 
 static void draw_player(const Player *p)
 {
+    const float swing = p->moving ? sinf(p->walk_phase) * 24.0f : 0.0f;
     glPushMatrix();
     glTranslatef(p->x, p->y_offset, p->z);
     glRotateY((int)p->yaw);
@@ -97,15 +100,34 @@ static void draw_player(const Player *p)
     draw_box(0.34f, 0.34f, 0.32f);
     glPopMatrix(1);
 
-    // Boots / legs
+    // Simple alternating leg swing while walking or running.
     glColor3f(0.28f, 0.20f, 0.12f);
     glPushMatrix();
-    glTranslatef(-0.13f, 0.16f, 0.0f);
+    glTranslatef(-0.13f, 0.32f, 0.0f);
+    glRotateX((int)swing);
+    glTranslatef(0.0f, -0.16f, 0.0f);
     draw_box(0.16f, 0.32f, 0.20f);
     glPopMatrix(1);
     glPushMatrix();
-    glTranslatef(0.13f, 0.16f, 0.0f);
+    glTranslatef(0.13f, 0.32f, 0.0f);
+    glRotateX((int)-swing);
+    glTranslatef(0.0f, -0.16f, 0.0f);
     draw_box(0.16f, 0.32f, 0.20f);
+    glPopMatrix(1);
+
+    // Arms swing opposite the legs.
+    glColor3f(0.12f, 0.42f, 0.18f);
+    glPushMatrix();
+    glTranslatef(-0.30f, 0.86f, 0.0f);
+    glRotateX((int)-swing);
+    glTranslatef(0.0f, -0.20f, 0.0f);
+    draw_box(0.14f, 0.40f, 0.18f);
+    glPopMatrix(1);
+    glPushMatrix();
+    glTranslatef(0.30f, 0.86f, 0.0f);
+    glRotateX((int)swing);
+    glTranslatef(0.0f, -0.20f, 0.0f);
+    draw_box(0.14f, 0.40f, 0.18f);
     glPopMatrix(1);
 
     glPopMatrix(1);
@@ -125,7 +147,10 @@ static void update_player(Player *p, uint16_t held, uint16_t down)
     if (held & KEY_B) move_speed = 0.105f;
 
     // Normalize diagonals so they are not faster than straight movement.
-    if (move_x != 0.0f || move_z != 0.0f) {
+    p->moving = (move_x != 0.0f || move_z != 0.0f);
+    if (p->moving) {
+        p->walk_phase += (held & KEY_B) ? 0.34f : 0.22f;
+        if (p->walk_phase > 6.28318f) p->walk_phase -= 6.28318f;
         const float length = sqrtf(move_x * move_x + move_z * move_z);
         move_x /= length;
         move_z /= length;
@@ -171,7 +196,7 @@ int main(void)
     gluPerspective(60.0f, 256.0f / 192.0f, 0.1f, 50.0f);
     glMatrixMode(GL_MODELVIEW);
 
-    Player player = { 0.0f, 2.0f, 0.0f, 0.0f, 0.0f, 1 };
+    Player player = { 0.0f, 2.0f, 0.0f, 0.0f, 0.0f, 1, 0.0f, 0 };
     int frames = 0;
 
     while (1) {
