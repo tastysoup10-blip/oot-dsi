@@ -21,9 +21,11 @@ This repository is separate from [ZeldaRET/oot](https://github.com/zeldaret/oot)
 3. [Initial engine reconnaissance](docs/ENGINE_RECONNAISSANCE.md)
 4. [Chromebook and Codespaces workflow](docs/CHROMEBOOK_WORKFLOW.md)
 
-## Browser ROM tool
+## Browser ROM extractor
 
-A first-stage, browser-only ROM verifier is in [`rom-tool/`](rom-tool/). It calculates the file's MD5 locally and checks for the known NTSC 1.2 hashes. The ROM is not uploaded or transmitted. This verifier does **not** extract Link's model yet; the DMA/file parser and DSi model conversion are subsequent milestones. To publish it, enable GitHub Pages for this repository and serve the repository root; the tool will be at `/rom-tool/` under the Pages site.
+The [`rom-tool/`](rom-tool/) page verifies the supported NTSC 1.2 ROM locally, locates its DMA filesystem, lists the present ROM files, and downloads selected files. Yaz0-compressed files are decompressed in the browser. No ROM or extracted data is uploaded.
+
+This is the first extraction milestone, not yet a complete model exporter. The next work is to resolve the player object through the code's object table, interpret its skeleton and F3DZEX display lists, decode textures, and convert the result to a DSi-compatible animated model. Do not commit ROMs or extracted assets to this public repository.
 
 ## Browser model converter
 
