@@ -104,3 +104,61 @@ The following symbols were located by reading the current upstream source:
 **What this tells us:** the original program is not a single simple loop that updates and draws everything on one thread. It coordinates game-state work, input, graphics, and scheduling through N64 operating-system-style threads and message queues. A DSi implementation will need its own frame coordination model, even if some game-state logic can be retained.
 
 **Still unverified:** exact timing behavior, task priority requirements, which parts of the scheduler are essential to gameplay, and the cleanest seam for replacing the graphics task system. Those require following the called functions and data structures further.
+
+
+### Graphics pipeline findings
+
+Sources inspected: upstream `include/gfx.h`, `src/code/z_rcp.c`, `src/code/graph.c`, `src/code/z_view.c`, and `src/code/z_skelanime.c` on 2026-11-25.
+
+#### 1. The game builds N64 display lists
+
+- `z_rcp.c` defines many graphics setup display lists using commands such as `gsDPPipeSync`, `gsSPTexture`, `gsDPSetCombineMode`, `gsDPSetOtherMode`, and `gsSPLoadGeometryMode`.
+- These commands configure N64 RDP/RSP rendering state: texture use, texture filtering, color combining, depth behavior, fog, lighting, geometry modes, and related pipeline state.
+- Gameplay drawing code also appends commands such as `gSPMatrix` and `gSPDisplayList`; for example, the skeleton animation routines in `z_skelanime.c` submit limb transforms and model display lists to the opaque polygon buffer.
+
+**DSi implication:** these are not generic 3D commands that the DSi GPU can execute directly. The DSi renderer must either translate the game's rendering concepts into DSi-native graphics operations or use a software rendering path. A simple recompile cannot preserve the original display-list backend.
+
+#### 2. The graphics context is built around N64 task submission
+
+In `include/gfx.h`:
+- The logical render dimensions are defined as 320×240.
+- `TMEM_SIZE` is defined as 0x1000 (4 KiB), reflecting the N64 texture-memory model.
+- `GraphicsContext` contains opaque, translucent, overlay, and work display-list buffers, an `OSScTask`, message queues, a VI mode pointer, and framebuffer state.
+- `GfxPool` reserves large arrays of N64 `Gfx` commands for those buffers.
+
+In `graph.c`, `Graph_TaskSet00()` fills an N64 graphics task structure with RSP microcode pointers, a display-list pointer and size, task/yield buffers, and flags requesting RSP and RDP work. The task is then coordinated with the scheduler and framebuffer swap process.
+
+**DSi implication:** the DSi port needs a different graphics context and frame-submission path. The existing `Gfx` command buffers, `OSScTask`, RSP microcode setup, RDP task flags, VI mode, and N64 framebuffer handoff are platform-specific.
+
+#### 3. Camera math and model traversal are more reusable than the renderer
+
+- `z_view.c` contains viewport conversion and view/projection setup routines.
+- `z_skelanime.c` traverses skeleton limbs, applies transforms, and selects model display lists for each limb.
+- The matrix and animation concepts are not inherently exclusive to the N64, but the final matrix loads and display-list submissions are expressed through N64 graphics commands.
+
+**DSi implication:** preserve and adapt the underlying camera, transform, animation, and scene logic where practical, while replacing the final drawing operations. The data structures may still need conversion to match a DSi renderer.
+
+#### 4. Initial graphics-port architecture
+
+A sensible first architecture to test is:
+
+1. Keep gameplay update and scene traversal separate from the platform renderer.
+2. Define a small renderer interface for operations such as beginning a frame, setting camera state, drawing a model, drawing a texture/sprite, and ending a frame.
+3. Implement a DSi backend for that interface using the DSi's own graphics facilities.
+4. Gradually replace N64 display-list calls at well-understood boundaries rather than trying to emulate the entire RSP/RDP pipeline immediately.
+
+This is a proposed design, not an implementation. We have not yet measured DSi performance, memory use, polygon throughput, texture limits, or whether a particular scene can meet a target frame rate.
+
+#### Evidence vs. open questions
+
+| Finding | Status |
+|---|---|
+| OOT source constructs N64 RSP/RDP display lists. | Verified in `z_rcp.c` and drawing code. |
+| The graphics context and task structure are tied to N64 scheduler/RSP/RDP/VI concepts. | Verified in `gfx.h` and `graph.c`. |
+| Skeleton drawing submits N64 matrices and display lists. | Verified in `z_skelanime.c`. |
+| Camera and animation logic can be reused with limited changes. | Hypothesis; needs call-graph and type-dependency analysis. |
+| A DSi-native renderer can reproduce enough of OOT's visual workload at acceptable speed. | Unknown; requires a small technical demo and measurements. |
+
+**Next investigation:** map the DSi's native 3D API and constraints against the specific OOT features used by a small representative scene. Before that, inspect how OOT models, textures, and display-list data are represented so we know what a conversion pipeline would have to consume.
+
+No ROM or extracted game assets were downloaded or added.
