@@ -18,7 +18,7 @@ typedef struct {
     float z;
     float yaw;
     float vertical_velocity;
-    float walk_speed;
+    float y_offset;
     int grounded;
 } Player;
 
@@ -80,7 +80,7 @@ static void draw_terrain(void)
 static void draw_player(const Player *p)
 {
     glPushMatrix();
-    glTranslatef(p->x, 0.0f, p->z);
+    glTranslatef(p->x, p->y_offset, p->z);
     glRotateY((int)p->yaw);
 
     // Green tunic/body
@@ -139,9 +139,9 @@ static void update_player(Player *p, uint16_t held, uint16_t down)
     }
     if (!p->grounded) {
         p->vertical_velocity -= 0.009f;
-        p->walk_speed += p->vertical_velocity;
-        if (p->walk_speed <= 0.0f) {
-            p->walk_speed = 0.0f;
+        p->y_offset += p->vertical_velocity;
+        if (p->y_offset <= 0.0f) {
+            p->y_offset = 0.0f;
             p->vertical_velocity = 0.0f;
             p->grounded = 1;
         }
@@ -202,7 +202,7 @@ int main(void)
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
         gluLookAt(cam_x, 2.8f, cam_z,
-                  player.x, 0.65f + player.walk_speed, player.z,
+                  player.x, 0.65f + player.y_offset, player.z,
                   0.0f, 1.0f, 0.0f);
         glPolyFmt(POLY_ALPHA(31) | POLY_CULL_NONE);
         draw_terrain();
