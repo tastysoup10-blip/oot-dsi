@@ -1,0 +1,10 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#17251d"><title>OoT DSi — Model Converter</title><link rel="stylesheet" href="style.css"></head>
+<body><main class="panel"><p class="eyebrow">OOT DSI PROJECT</p><h1>Model Converter</h1><p class="intro">Convert a simple Wavefront OBJ mesh into a C header that can be compiled into the DSi player prototype.</p>
+<section class="notice"><strong>Local processing</strong><p>Your model file stays in this browser. Nothing is uploaded. This first version converts geometry only—no textures, materials, or skeletal weights.</p></section>
+<label for="model">Choose a .obj model</label><input id="model" type="file" accept=".obj,text/plain">
+<div id="status" class="status" role="status" aria-live="polite">Waiting for an OBJ file.</div>
+<section id="result" hidden><h2>Model summary</h2><dl><dt>Vertices</dt><dd id="vertices"></dd><dt>Triangles</dt><dd id="triangles"></dd><dt>Scale</dt><dd>Centered and normalized to fit within 1.5 units</dd></dl><button id="download">Download model_mesh.h</button></section>
+<section class="notice muted"><strong>DSi limits</strong><p>This converter caps output at 500 triangles as a conservative starting point. The DS 3D engine has a 6,144-vertex-per-frame hardware limit shared by the whole scene. Keep models low-poly.</p></section>
+<section class="notice muted"><strong>How to use the result</strong><ol><li>Download <code>model_mesh.h</code>.</li><li>Place it in <code>dsi-player-movement/source/</code>.</li><li>Include it in <code>main.c</code> and call <code>draw_imported_model()</code> where the placeholder player is drawn.</li></ol><p>The header draws a single-color mesh. It is not a Link model extractor; use a model you created or are allowed to use.</p></section>
+<p class="foot"><a href="../rom-tool/">Back to ROM Tool</a> · <a href="../">Project</a></p></main><script src="app.js"></script></body></html>
