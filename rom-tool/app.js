@@ -47,3 +47,4 @@ async function handleRomSelection(){const file=input.files?.[0];if(!file||file==
 input.addEventListener("change",handleRomSelection);
 input.addEventListener("input",handleRomSelection);
 filter.addEventListener("input",render);
+document.querySelector("#clear-console")?.addEventListener("click",()=>{document.querySelector("#dev-console").replaceChildren();devLog("info","Console cleared by user.");});
